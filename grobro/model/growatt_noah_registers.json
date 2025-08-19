@@ -1633,9 +1633,21 @@
             "enum_type": "INT_MAP",
             "values": {
               "0": "Off",
-              "1": "1",
-              "2": "2",
-              "3": "3"
+              "1": "1 Heating",
+              "2": "2 Heating",
+              "3": "1&2 Heating",
+              "4": "3 Heating",
+              "5": "1&3 Heating",
+              "6": "2&3 Heating",
+              "7": "1&2&3 Heating",
+              "8": "4 Heating",
+              "9": "1&4 Heating",
+              "10": "2&4 Heating",
+              "11": "1&2&4 Heating",
+              "12": "3&4 Heating",
+              "13": "1&3&4 Heating",
+              "14": "2&3&4 Heating",
+              "15": "All Heating"
             }
           }
         }
