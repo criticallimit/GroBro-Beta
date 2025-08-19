@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from enum import Enum
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import importlib.resources as resources
 import json
 import struct
@@ -103,11 +103,14 @@ class HomeassistantInputRegister(BaseModel):
     icon: Optional[str] = None
 
 
-# ⚡ Anpassung: internes Feld register_value + Property
+# ⚡ Register-Feld umbenannt, Alias für alte Nutzung
 class HomeAssistantHoldingRegisterValue(BaseModel):
     name: str
     value: Union[str, float, int]
-    register_value: HomeAssistantHoldingRegister
+    register_value: HomeAssistantHoldingRegister = Field(..., alias="register")
+
+    class Config:
+        allow_population_by_field_name = True
 
     @property
     def register(self):
