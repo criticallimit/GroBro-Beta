@@ -1619,7 +1619,6 @@
         "unit_of_measurement": "A",
         "icon": "mdi:current-ac"
       }
-    # Heater to be validated, BIT 0-3 Heater 1-4 ?
     },
     "heater": { 
       "growatt": {
