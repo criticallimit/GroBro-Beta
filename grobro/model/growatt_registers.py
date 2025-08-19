@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import importlib.resources as resources
 import json
 import struct
@@ -38,32 +38,33 @@ class GrowattRegisterDataType(BaseModel):
         if not data_raw:
             return None
         unpack_type = {1: "!B", 2: "!H", 4: "!I"}[len(data_raw)]
-        value = struct.unpack(unpack_type, data_raw)[0]
-
         if self.data_type == GrowattRegisterDataTypes.FLOAT:
             opts = self.float_options
-            return round(value * opts.multiplier + opts.delta, 3)
-
+            value = struct.unpack(unpack_type, data_raw)[0]
+            value *= opts.multiplier
+            value += opts.delta
+            return round(value, 3)
         elif self.data_type == GrowattRegisterDataTypes.TIME_HHMM:
-            h, m = divmod(value, 256)
-            return h * 100 + m
-
+            value = struct.unpack(unpack_type, data_raw)[0]
+            h = value // 256
+            m = value % 256
+            return (h * 100) + m
         elif self.data_type == GrowattRegisterDataTypes.INT:
+            value = struct.unpack(unpack_type, data_raw)[0]
             return value
-
         elif self.data_type == GrowattRegisterDataTypes.ENUM:
             opts = self.enum_options
-            if opts.enum_type == GrowattRegisterEnumTypes.INT_MAP:
-                return opts.values.get(int(value), None)
-
-            elif opts.enum_type == GrowattRegisterEnumTypes.BITFIELD:
-                result = {}
-                for bit_index, name in opts.values.items():
-                    result[name] = bool((value >> bit_index) & 1)
-                return result
-
+            value = struct.unpack(unpack_type, data_raw)[0]
+            if opts.enum_type == GrowattRegisterEnumTypes.BITFIELD:
+                return None  # TODO: implement
+            elif opts.enum_type == GrowattRegisterEnumTypes.INT_MAP:
+                enum_value = opts.values.get(int(value), None)
+                if not enum_value:
+                    return None
+                return value
         elif self.data_type == GrowattRegisterDataTypes.STRING:
-            return data_raw.decode("ascii", errors="ignore").strip("\x00")
+            value = data_raw.decode("ascii", errors="ignore").strip("\x00")
+            return value
 
 
 class GrowattRegisterPosition(BaseModel):
@@ -102,22 +103,10 @@ class HomeassistantInputRegister(BaseModel):
     icon: Optional[str] = None
 
 
-# ⚡ Alias für alte Nutzung, V2-konform
 class HomeAssistantHoldingRegisterValue(BaseModel):
     name: str
     value: Union[str, float, int]
-    register_value: HomeAssistantHoldingRegister = Field(..., alias="register")
-
-    class Config:
-        validate_by_name = True
-
-    @property
-    def register(self):
-        return self.register_value
-
-    @register.setter
-    def register(self, value):
-        self.register_value = value
+    register: HomeAssistantHoldingRegister
 
 
 class HomeAssistantHoldingRegisterInput(BaseModel):
@@ -125,7 +114,7 @@ class HomeAssistantHoldingRegisterInput(BaseModel):
     payload: list[HomeAssistantHoldingRegisterValue] = []
 
 
-class HomeAssistantInputRegisterV2(BaseModel):
+class HomeAssistantInputRegister(BaseModel):
     device_id: str
     payload: dict[str, Union[str, float, int]] = {}
 
@@ -145,10 +134,16 @@ class GroBroRegisters(BaseModel):
     holding_registers: dict[str, GroBroHoldingRegister]
 
 
-# Daten laden
-with resources.files(__package__).joinpath("growatt_neo_registers.json").open("rb") as f:
+with resources.files(__package__).joinpath("growatt_neo_registers.json").open(
+    "rb"
+) as f:
     KNOWN_NEO_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
-with resources.files(__package__).joinpath("growatt_noah_registers.json").open("rb") as f:
+with resources.files(__package__).joinpath("growatt_noah_registers.json").open(
+    "rb"
+) as f:
     KNOWN_NOAH_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
-with resources.files(__package__).joinpath("growatt_nexa_registers.json").open("rb") as f:
+
+with resources.files(__package__).joinpath("growatt_nexa_registers.json").open(
+    "rb"
+) as f:
     KNOWN_NEXA_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
