@@ -103,7 +103,7 @@ class HomeassistantInputRegister(BaseModel):
     icon: Optional[str] = None
 
 
-# ⚡ Register-Feld umbenannt, Alias für alte Nutzung
+# ⚡ Warnungsfreie Version: internes Feld 'register_value', Alias für alte Nutzung
 class HomeAssistantHoldingRegisterValue(BaseModel):
     name: str
     value: Union[str, float, int]
@@ -126,7 +126,7 @@ class HomeAssistantHoldingRegisterInput(BaseModel):
     payload: list[HomeAssistantHoldingRegisterValue] = []
 
 
-class HomeAssistantInputRegister(BaseModel):
+class HomeAssistantInputRegisterContainer(BaseModel):  # ⚡ umbenannt, um Konflikt zu vermeiden
     device_id: str
     payload: dict[str, Union[str, float, int]] = {}
 
