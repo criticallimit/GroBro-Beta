@@ -1,4 +1,4 @@
-## no Versioning
+## Beta 13
 
-## only for private tests
+added Noah Heater enum (BIT0-3, 0=Off?), all other has to be validated
 
