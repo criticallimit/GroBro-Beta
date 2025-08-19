@@ -1619,11 +1619,12 @@
         "unit_of_measurement": "A",
         "icon": "mdi:current-ac"
       }
+    # Heater to be validated, BIT 0-3 Heater 1-4 ?
     },
     "heater": { 
       "growatt": {
         "position": {
-          "register_no": 17, # to be validated
+          "register_no": 17,
           "offset": 0,
           "size": 2
         },
@@ -1632,7 +1633,7 @@
           "enum_options": {
             "enum_type": "INT_MAP",
             "values": {
-              "0": "Off",    # BIT0-3 Heater 1-4?
+              "0": "Off",
               "1": "1",
               "2": "2",
               "3": "3"
