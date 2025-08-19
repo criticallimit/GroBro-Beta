@@ -38,33 +38,32 @@ class GrowattRegisterDataType(BaseModel):
         if not data_raw:
             return None
         unpack_type = {1: "!B", 2: "!H", 4: "!I"}[len(data_raw)]
+        value = struct.unpack(unpack_type, data_raw)[0]
+
         if self.data_type == GrowattRegisterDataTypes.FLOAT:
             opts = self.float_options
-            value = struct.unpack(unpack_type, data_raw)[0]
-            value *= opts.multiplier
-            value += opts.delta
-            return round(value, 3)
+            return round(value * opts.multiplier + opts.delta, 3)
+
         elif self.data_type == GrowattRegisterDataTypes.TIME_HHMM:
-            value = struct.unpack(unpack_type, data_raw)[0]
-            h = value // 256
-            m = value % 256
-            return (h * 100) + m
+            h, m = divmod(value, 256)
+            return h * 100 + m
+
         elif self.data_type == GrowattRegisterDataTypes.INT:
-            value = struct.unpack(unpack_type, data_raw)[0]
             return value
+
         elif self.data_type == GrowattRegisterDataTypes.ENUM:
             opts = self.enum_options
-            value = struct.unpack(unpack_type, data_raw)[0]
-            if opts.enum_type == GrowattRegisterEnumTypes.BITFIELD:
-                return None  # TODO: implement
-            elif opts.enum_type == GrowattRegisterEnumTypes.INT_MAP:
-                enum_value = opts.values.get(int(value), None)
-                if not enum_value:
-                    return None
-                return value
+            if opts.enum_type == GrowattRegisterEnumTypes.INT_MAP:
+                return opts.values.get(int(value), None)
+
+            elif opts.enum_type == GrowattRegisterEnumTypes.BITFIELD:
+                result = {}
+                for bit_index, name in opts.values.items():
+                    result[name] = bool((value >> bit_index) & 1)
+                return result
+
         elif self.data_type == GrowattRegisterDataTypes.STRING:
-            value = data_raw.decode("ascii", errors="ignore").strip("\x00")
-            return value
+            return data_raw.decode("ascii", errors="ignore").strip("\x00")
 
 
 class GrowattRegisterPosition(BaseModel):
@@ -103,14 +102,14 @@ class HomeassistantInputRegister(BaseModel):
     icon: Optional[str] = None
 
 
-# ⚡ Warnungsfreie Version: internes Feld 'register_value', Alias für alte Nutzung
+# ⚡ Alias für alte Nutzung, V2-konform
 class HomeAssistantHoldingRegisterValue(BaseModel):
     name: str
     value: Union[str, float, int]
     register_value: HomeAssistantHoldingRegister = Field(..., alias="register")
 
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
 
     @property
     def register(self):
@@ -126,7 +125,7 @@ class HomeAssistantHoldingRegisterInput(BaseModel):
     payload: list[HomeAssistantHoldingRegisterValue] = []
 
 
-class HomeAssistantInputRegisterContainer(BaseModel):  # ⚡ umbenannt, um Konflikt zu vermeiden
+class HomeAssistantInputRegisterV2(BaseModel):
     device_id: str
     payload: dict[str, Union[str, float, int]] = {}
 
