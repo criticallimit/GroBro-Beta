@@ -1,4 +1,4 @@
-## Beta 14
+## Beta 15
 
 added Noah Heater enum (BIT0-3, 0=Off), all other has to be validated
 
