@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 import importlib.resources as resources
 import json
 import struct
@@ -103,11 +103,19 @@ class HomeassistantInputRegister(BaseModel):
     icon: Optional[str] = None
 
 
-# ⚡ Hier angepasst: register -> register_value mit Alias
+# ⚡ Anpassung: internes Feld register_value + Property
 class HomeAssistantHoldingRegisterValue(BaseModel):
     name: str
     value: Union[str, float, int]
-    register_value: HomeAssistantHoldingRegister = Field(..., alias="register")
+    register_value: HomeAssistantHoldingRegister
+
+    @property
+    def register(self):
+        return self.register_value
+
+    @register.setter
+    def register(self, value):
+        self.register_value = value
 
 
 class HomeAssistantHoldingRegisterInput(BaseModel):
@@ -133,13 +141,6 @@ class GroBroHoldingRegister(BaseModel):
 class GroBroRegisters(BaseModel):
     input_registers: dict[str, GroBroInputRegister]
     holding_registers: dict[str, GroBroHoldingRegister]
-
-
-# ⚡ Neu: GrowattModbusFunctionSingle ohne Warnung
-class GrowattModbusFunctionSingle(BaseModel):
-    register_value: int = Field(..., alias="register")
-    name: str
-    description: Optional[str] = None
 
 
 # Daten laden
