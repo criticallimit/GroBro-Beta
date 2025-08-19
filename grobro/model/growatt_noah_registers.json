@@ -1620,10 +1620,10 @@
         "icon": "mdi:current-ac"
       }
     },
-    "heater": {
+    "heater": { 
       "growatt": {
         "position": {
-          "register_no": 17,
+          "register_no": 17, # to be validated
           "offset": 0,
           "size": 2
         },
@@ -1632,7 +1632,7 @@
           "enum_options": {
             "enum_type": "INT_MAP",
             "values": {
-              "0": "0",
+              "0": "Off",    # BIT0-3 Heater 1-4?
               "1": "1",
               "2": "2",
               "3": "3"
