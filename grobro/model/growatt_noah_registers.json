@@ -1620,19 +1620,28 @@
         "icon": "mdi:current-ac"
       }
     },
-    "heater_status": {
+    "heater": {
       "growatt": {
         "position": {
-          "register_no": 12,
+          "register_no": 17,
           "offset": 0,
           "size": 2
         },
         "data": {
-          "data_type": "INT"
+          "data_type": "ENUM",
+          "enum_options": {
+            "enum_type": "INT_MAP",
+            "values": {
+              "0": "0",
+              "1": "1",
+              "2": "2",
+              "3": "3",
+            }
+          }
         }
       },
       "homeassistant": {
-        "name": "Heater Status",
+        "name": "Heater",
         "publish": true,
         "icon": "mdi:radiator"
       }
