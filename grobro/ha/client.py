@@ -1,4 +1,4 @@
-from grobro.model.growatt_registers import HomeassistantInputRegister
+from grobro.model.growatt_registers import HomeAssistantInputRegister
 from grobro.model.growatt_registers import KNOWN_NEO_REGISTERS, KNOWN_NOAH_REGISTERS, KNOWN_NEXA_REGISTERS
 import os
 import struct
