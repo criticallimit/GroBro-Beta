@@ -135,6 +135,13 @@ class GroBroRegisters(BaseModel):
     holding_registers: dict[str, GroBroHoldingRegister]
 
 
+# ⚡ Neu: GrowattModbusFunctionSingle ohne Warnung
+class GrowattModbusFunctionSingle(BaseModel):
+    register_value: int = Field(..., alias="register")
+    name: str
+    description: Optional[str] = None
+
+
 # Daten laden
 with resources.files(__package__).joinpath("growatt_neo_registers.json").open("rb") as f:
     KNOWN_NEO_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
