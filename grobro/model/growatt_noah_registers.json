@@ -1695,8 +1695,7 @@
       "max": 800,
       "step": 1
       }
-    },
-    
+    },  
     "bat_cyclecnt": {
       "growatt": {
         "position": {
