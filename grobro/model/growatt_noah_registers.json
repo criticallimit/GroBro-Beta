@@ -1246,10 +1246,10 @@
         "icon": "mdi:flash"
       }
     },
-    "temp2": {
+    "bat2_temp": {
       "growatt": {
         "position": {
-          "register_no": 97,
+          "register_no": 42,
           "offset": 0,
           "size": 2
         },
@@ -1262,7 +1262,7 @@
         }
       },
       "homeassistant": {
-        "name": "Temperature 2",
+        "name": "Bat2 Temp",
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
@@ -1667,10 +1667,10 @@
         "icon": "mdi:percent"
       }
     },
-    "temp1": {
+    "bat1_temp": {
       "growatt": {
         "position": {
-          "register_no": 94,
+          "register_no": 30,
           "offset": 0,
           "size": 2
         },
@@ -1683,7 +1683,7 @@
         }
       },
       "homeassistant": {
-        "name": "Temperature 1",
+        "name": "Bat1 Temp",
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
