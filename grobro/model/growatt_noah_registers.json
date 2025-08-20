@@ -83,6 +83,27 @@
             "step": 1
         }
     },
+    "smart_power": {
+        "growatt": {
+            "position": {
+                "register_no": 311,
+                "offset": 0,
+                "size": 2
+            },
+            "data": {
+                "data_type": "INT"
+            }
+        },
+        "homeassistant": {
+            "publish": true,
+            "name": "Smart Power",
+            "unit_of_measurement": "W",
+            "type": "number",
+            "min": 0,
+            "max": 800,
+            "step": 1
+        }
+    },
     "slot1_enabled": {
         "growatt": {
             "position": {
