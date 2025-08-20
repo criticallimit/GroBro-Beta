@@ -1682,8 +1682,8 @@
           "offset": 0,
           "size": 2
         },
-          "data": {
-            "data_type": "INT"
+        "data": {
+          "data_type": "INT"
       }
     },
     "homeassistant": {
