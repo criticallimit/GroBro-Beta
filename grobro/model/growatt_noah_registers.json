@@ -1249,7 +1249,7 @@
     "bat2_temp": {
       "growatt": {
         "position": {
-          "register_no": 42,
+          "register_no": 122,
           "offset": 0,
           "size": 2
         },
@@ -1670,7 +1670,7 @@
     "bat1_temp": {
       "growatt": {
         "position": {
-          "register_no": 30,
+          "register_no": 120,
           "offset": 0,
           "size": 2
         },
@@ -1684,6 +1684,54 @@
       },
       "homeassistant": {
         "name": "Bat1 Temp",
+        "publish": true,
+        "state_class": "measurement",
+        "device_class": "temperature",
+        "unit_of_measurement": "°C",
+        "icon": "mdi:thermometer"
+      }
+    },
+"bat3_temp": {
+      "growatt": {
+        "position": {
+          "register_no": 124,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "FLOAT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 0.01
+          }
+        }
+      },
+      "homeassistant": {
+        "name": "Bat3 Temp",
+        "publish": true,
+        "state_class": "measurement",
+        "device_class": "temperature",
+        "unit_of_measurement": "°C",
+        "icon": "mdi:thermometer"
+      }
+    },
+"bat4_temp": {
+      "growatt": {
+        "position": {
+          "register_no": 126,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "FLOAT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 0.01
+          }
+        }
+      },
+      "homeassistant": {
+        "name": "Bat4 Temp",
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
