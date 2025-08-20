@@ -1,4 +1,4 @@
-## Beta 16
+## Beta 17
 
 Warnings in GroBro Protocol after start now should be gone
 
