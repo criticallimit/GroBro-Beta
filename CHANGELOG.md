@@ -2,7 +2,7 @@
 This is for personal testing. 
 Changes are not documented and there may be faulty behavior of this Add-on
 
-## Beta 22
+## Beta 23
 
 added Noah Sensor "dynamic Power"
 
