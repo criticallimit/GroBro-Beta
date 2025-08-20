@@ -2,6 +2,10 @@
 This is for personal testing. 
 Changes are not documented and there may be faulty behavior of this Add-on
 
+## Beta 31
+
+added Noah Serial-Parts 1-4 for Bat1 and Bat2
+
 ## Beta 30
 
 added Noah Smart Power (Register 311)
