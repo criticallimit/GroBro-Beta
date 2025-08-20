@@ -2,12 +2,15 @@
 This is for personal testing. 
 Changes are not documented and there may be temporary unexpected behavior of this Add-on
 
+## Beta 35
+
+added Noah Serial-Parts 1-4 for Bat3 and Bat4.
+
 ## Beta 34
 
 added Noah Bat3 and Bat4 Temperatures
 
 reverted Bat1 and Bat2 Temperature Registers (none of the known registers replicate the temps in the shine app)
-
 
 
 ## Beta 32
