@@ -1,6 +1,8 @@
 from grobro.model.modbus_message import GrowattModbusFunction
 import struct
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from enum import Enum
+from pylint.checkers.base import register
 from typing import Optional
 
 MODBUS_COMMAND_STRUCT = ">HHHBB30sHH"
@@ -32,10 +34,10 @@ class GrowattModbusFunctionMultiple(BaseModel):
     @staticmethod
     def parse_grobro(buffer) -> Optional["GrowattModbusFunctionMultiple"]:
         (
-            _,
-            _,
-            _,
-            _,
+            constant_1,
+            constant_7,
+            msg_len,
+            constant_1,
             function,
             device_id_raw,
             start,
@@ -50,7 +52,7 @@ class GrowattModbusFunctionMultiple(BaseModel):
             function=function,
             start=start,
             end=end,
-            values=values,
+            value=value,
         )
 
     def build_grobro(self) -> bytes:
@@ -86,16 +88,16 @@ class GrowattModbusFunctionSingle(BaseModel):
 
     device_id: str
     function: GrowattModbusFunction
-    register_field: int = Field(..., alias="register")  # ✅ Alias für Warnungsfreiheit
+    register: int
     value: int
 
     @staticmethod
-    def parse_grobro(buffer) -> Optional["GrowattModbusFunctionSingle"]:
+    def parse_grobro(buffer) -> Optional["GrowattModbusMessage"]:
         (
-            _,
-            _,
-            _,
-            _,
+            constant_1,
+            constant_7,
+            msg_len,
+            constant_1,
             function,
             device_id_raw,
             register,
@@ -107,7 +109,7 @@ class GrowattModbusFunctionSingle(BaseModel):
         return GrowattModbusFunctionSingle(
             device_id=device_id,
             function=function,
-            register=register,  # Alias nutzen → extern "register"
+            register=register,
             value=value,
         )
 
@@ -120,6 +122,6 @@ class GrowattModbusFunctionSingle(BaseModel):
             1,
             self.function,
             self.device_id.encode("ascii").ljust(30, b"\x00"),  # device_id
-            self.register_field,  # intern "register_field" nutzen
+            self.register,
             self.value,
         )
