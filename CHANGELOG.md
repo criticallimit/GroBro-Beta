@@ -1,3 +1,6 @@
+### WARNING: 
+This is for personal testing. 
+Changes are not documented and there may be faulty behavior of this Add-on
 
 ## Beta 19
 
