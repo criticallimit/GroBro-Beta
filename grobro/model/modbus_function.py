@@ -1,8 +1,6 @@
 from grobro.model.modbus_message import GrowattModbusFunction
 import struct
 from pydantic import BaseModel
-from enum import Enum
-from pylint.checkers.base import register
 from typing import Optional
 
 MODBUS_COMMAND_STRUCT = ">HHHBB30sHH"
@@ -32,12 +30,12 @@ class GrowattModbusFunctionMultiple(BaseModel):
     values: bytes
 
     @staticmethod
-    def parse_grobro(buffer) -> Optional["GrowattModbusFunctionMultiple"]:
+    def parse_grobro(buffer: bytes) -> Optional["GrowattModbusFunctionMultiple"]:
         (
-            constant_1,
+            unknown,
             constant_7,
             msg_len,
-            constant_1,
+            device_addr,
             function,
             device_id_raw,
             start,
@@ -52,7 +50,7 @@ class GrowattModbusFunctionMultiple(BaseModel):
             function=function,
             start=start,
             end=end,
-            value=value,
+            values=values,
         )
 
     def build_grobro(self) -> bytes:
@@ -63,7 +61,7 @@ class GrowattModbusFunctionMultiple(BaseModel):
             36 + len(self.values),
             1,
             self.function,
-            self.device_id.encode("ascii").ljust(30, b"\x00"),  # device_id
+            self.device_id.encode("ascii").ljust(30, b"\x00"),
             self.start,
             self.end,
         )
@@ -92,12 +90,12 @@ class GrowattModbusFunctionSingle(BaseModel):
     value: int
 
     @staticmethod
-    def parse_grobro(buffer) -> Optional["GrowattModbusMessage"]:
+    def parse_grobro(buffer: bytes) -> Optional["GrowattModbusFunctionSingle"]:
         (
-            constant_1,
+            unknown,
             constant_7,
             msg_len,
-            constant_1,
+            device_addr,
             function,
             device_id_raw,
             register,
@@ -121,7 +119,7 @@ class GrowattModbusFunctionSingle(BaseModel):
             36,
             1,
             self.function,
-            self.device_id.encode("ascii").ljust(30, b"\x00"),  # device_id
+            self.device_id.encode("ascii").ljust(30, b"\x00"),
             self.register,
             self.value,
         )
