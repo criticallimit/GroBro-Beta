@@ -1072,29 +1072,10 @@
           }
         }
       },
-    "heater": {
-      "growatt": {
-        "position": {
-          "register_no": 17,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "ENUM",
-          "enum_options": {
-            "enum_type": "INT_MAP",
-            "values": {
-              "0": "Off",
-              "1": "1 On",
-              "2": "2 On"
-            }
-          }
-        }
-      },
       "homeassistant": {
-        "name": "Heater",
+        "name": "Battery System State",
         "publish": true,
-        "icon": "mdi:radiator"
+        "icon": "mdi:battery-sync"
       }
     },
     "tot_bat_soc_pct": {
