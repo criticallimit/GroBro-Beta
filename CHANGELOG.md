@@ -2,7 +2,7 @@
 This is for personal testing. 
 Changes are not documented and there may be faulty behavior of this Add-on
 
-## Beta 33
+## Beta 34
 
 added Noah Bat3 and Bat4 Temperatures
 
