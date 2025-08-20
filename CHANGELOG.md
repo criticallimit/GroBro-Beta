@@ -1,11 +1,5 @@
-## Beta 17
 
-Warnings in GroBro Protocol after start now should be gone
-
-
-
-
-## Beta 15
+## Beta 18
 
 added Noah Heater INT_MAP
 
