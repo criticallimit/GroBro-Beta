@@ -1,9 +1,11 @@
+from rope.base import serializer
 from typing import Optional
 from datetime import datetime
 import struct
 import logging
-from pydantic import BaseModel
+from pydantic.main import BaseModel
 from enum import Enum
+from pylint.checkers.base import register
 from grobro.model.growatt_registers import GrowattRegisterPosition
 
 LOG = logging.getLogger(__name__)
@@ -38,10 +40,11 @@ class GrowattModbusBlock(BaseModel):
             assert len(result.values) == num_blocks * 2
             return result
         except Exception as e:
-            LOG.warning("Parsing GrowattModbusBlock: %s", e)
+            LOG.warn("Parsing GrowattModbusBlock: %s", e)
 
     def build_grobro(self) -> bytes:
-        return struct.pack(">HH", self.start, self.end) + self.values
+        result = struct.pack(">HH", self.start, self.end) + self.values
+        return result
 
     def size(self):
         return 4 + len(self.values)
@@ -89,7 +92,7 @@ class GrowattMetadata(BaseModel):
         return GrowattMetadata(device_sn=device_serial, timestamp=timestamp)
 
     def build_grobro(self) -> bytes:
-        return struct.pack(
+        result = struct.pack(
             ">30s7B",
             self.device_sn.encode("ascii").ljust(30, b"\x00"),  # device_id
             self.timestamp.year - 2000,
@@ -100,6 +103,7 @@ class GrowattMetadata(BaseModel):
             self.timestamp.second,
             int(self.timestamp.microsecond / 1000),
         )
+        return result
 
 
 class GrowattModbusMessage(BaseModel):
@@ -177,7 +181,7 @@ class GrowattModbusMessage(BaseModel):
                 register_blocks=register_blocks,
             )
         except Exception as e:
-            LOG.warning("parsing GrowattModbusMessage: %s", e)
+            LOG.warn("parsing GrowattModbusMessage: %s", e)
 
     def build_grobro(self) -> bytes:
         result = struct.pack(
