@@ -2,6 +2,10 @@
 This is for personal testing. 
 Changes are not documented and there may be faulty behavior of this Add-on
 
+## Beta 21
+
+added Noah Sensor "dynamic Power"
+
 ## Beta 19
 
 added Noah Heater INT_MAP
