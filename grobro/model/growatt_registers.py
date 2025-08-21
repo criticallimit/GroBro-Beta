@@ -1,4 +1,4 @@
-from typing import Optional, Union, Callable
+from typing import Optional, Union
 from enum import Enum
 from pydantic import BaseModel
 import importlib.resources as resources
@@ -134,9 +134,24 @@ class GroBroRegisters(BaseModel):
     holding_registers: dict[str, GroBroHoldingRegister]
 
 
-# -----------------------------
-# Load known registers
-# -----------------------------
+# --- Noah Firmware Register ---
+CONTROL_FW = GroBroInputRegister(
+    growatt=GrowattInputRegister(
+        position=GrowattRegisterPosition(register_no=0x0C),  # High-Byte Start
+        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.STRING)
+    ),
+    homeassistant=HomeassistantInputRegister(
+        name="Noah Firmware",
+        publish=True,
+        state_class="measurement",
+        device_class="firmware",
+        unit_of_measurement=None,
+        icon="mdi:chip"
+    )
+)
+
+
+# --- Laden bestehender Register ---
 with resources.files(__package__).joinpath("growatt_neo_registers.json").open("rb") as f:
     KNOWN_NEO_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
@@ -147,80 +162,5 @@ with resources.files(__package__).joinpath("growatt_nexa_registers.json").open("
     KNOWN_NEXA_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
 
-# -----------------------------
-# Noah Firmware-Register intern
-# -----------------------------
-CONTROL_FW_HIGH = GrowattInputRegister(
-    position=GrowattRegisterPosition(register_no=0x0C),
-    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT),
-)
-CONTROL_FW_MID = GrowattInputRegister(
-    position=GrowattRegisterPosition(register_no=0x0D),
-    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT),
-)
-CONTROL_FW_LOW = GrowattInputRegister(
-    position=GrowattRegisterPosition(register_no=0x0E),
-    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT),
-)
-
-
-# -----------------------------
-# Noah Firmware-Entity für Home Assistant
-# -----------------------------
-def read_noah_firmware(read_raw_register: Callable[[int, int], bytes]) -> str:
-    """
-    Liest High/Mid/Low-Register und erzeugt Firmware-Version als String.
-    read_raw_register(register_no: int, size: int) -> bytes
-    """
-    high_raw = read_raw_register(CONTROL_FW_HIGH.position.register_no, CONTROL_FW_HIGH.position.size)
-    mid_raw = read_raw_register(CONTROL_FW_MID.position.register_no, CONTROL_FW_MID.position.size)
-    low_raw = read_raw_register(CONTROL_FW_LOW.position.register_no, CONTROL_FW_LOW.position.size)
-
-    high = CONTROL_FW_HIGH.data.parse(high_raw) or 0
-    mid = CONTROL_FW_MID.data.parse(mid_raw) or 0
-    low = CONTROL_FW_LOW.data.parse(low_raw) or 0
-
-    return f"{high}.{mid}.{low}"
-
-
-class NoahFirmwareEntity(BaseModel):
-    name: str = "firmware_version"
-    publish: bool = True
-    state_class: str = "measurement"
-    device_class: str = "firmware"
-    _read_func: Optional[Callable[[], str]] = None
-
-    def value(self) -> str:
-        if self._read_func:
-            return self._read_func()
-        return "0.0.0"
-
-
-# -----------------------------
-# Firmware direkt in Home Assistant verfügbar
-# -----------------------------
-NOAH_FIRMWARE = NoahFirmwareEntity(_read_func=lambda: read_noah_firmware(lambda reg_no, size: b"\x01\x02"))  # Platzhalter: echte Lese-Funktion einsetzen
-
-KNOWN_NOAH_REGISTERS.input_registers["firmware_version"] = GroBroInputRegister(
-    growatt=CONTROL_FW_HIGH,  # nur intern
-    homeassistant=HomeassistantInputRegister(
-        name=NOAH_FIRMWARE.name,
-        publish=NOAH_FIRMWARE.publish,
-        state_class=NOAH_FIRMWARE.state_class,
-        device_class=NOAH_FIRMWARE.device_class,
-    ),
-)
-
-# Die Low/Mid/High Register selbst werden nicht veröffentlicht
-KNOWN_NOAH_REGISTERS.input_registers["control_fw_high"] = GroBroInputRegister(
-    growatt=CONTROL_FW_HIGH,
-    homeassistant=HomeassistantInputRegister(name="control_fw_high", publish=False),
-)
-KNOWN_NOAH_REGISTERS.input_registers["control_fw_mid"] = GroBroInputRegister(
-    growatt=CONTROL_FW_MID,
-    homeassistant=HomeassistantInputRegister(name="control_fw_mid", publish=False),
-)
-KNOWN_NOAH_REGISTERS.input_registers["control_fw_low"] = GroBroInputRegister(
-    growatt=CONTROL_FW_LOW,
-    homeassistant=HomeassistantInputRegister(name="control_fw_low", publish=False),
-)
+# --- Noah Firmware in die Input Registers einfügen ---
+KNOWN_NOAH_REGISTERS.input_registers["firmware"] = CONTROL_FW
