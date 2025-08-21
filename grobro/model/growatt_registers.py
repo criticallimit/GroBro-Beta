@@ -135,42 +135,7 @@ class GroBroRegisters(BaseModel):
 
 
 # -----------------------------
-# Noah Firmware-Register
-# -----------------------------
-GROBRO_FIRMWARE = GroBroInputRegister(
-    growatt=GrowattInputRegister(
-        position=GrowattRegisterPosition(register_no=0x0C, size=6),  # 0x0C..0x0E
-        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
-    ),
-    homeassistant=HomeassistantInputRegister(
-        name="firmware_version",
-        publish=True,
-        state_class=None,
-        device_class=None,
-        unit_of_measurement=None,
-        icon="mdi:chip"
-    )
-)
-
-
-def parse_noah_firmware(data_raw: bytes) -> str:
-    """
-    Erwartet 6 Bytes: High(2) | Mid(2) | Low(2)
-    Gibt lesbare Firmware zurück, z.B. '1.23.4'
-    """
-    if not data_raw or len(data_raw) != 6:
-        return "unknown"
-
-    high, mid, low = struct.unpack("!HHH", data_raw)
-    return f"{high}.{mid}.{low}"
-
-
-# Parse-Methode für die Firmware-Entität setzen
-GROBRO_FIRMWARE.growatt.parse = parse_noah_firmware
-
-
-# -----------------------------
-# Vorhandene Register laden
+# Load known registers
 # -----------------------------
 with resources.files(__package__).joinpath("growatt_neo_registers.json").open("rb") as f:
     KNOWN_NEO_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
@@ -181,6 +146,64 @@ with resources.files(__package__).joinpath("growatt_noah_registers.json").open("
 with resources.files(__package__).joinpath("growatt_nexa_registers.json").open("rb") as f:
     KNOWN_NEXA_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
-# --- Hilfsfunktion: Firmwarebytes zu lesbarer Version ---
-def parse_firmware_version(high: int, mid: int, low: int) -> str:
+
+# -----------------------------
+# Noah Firmware-Register intern
+# -----------------------------
+CONTROL_FW_HIGH = GrowattInputRegister(
+    position=GrowattRegisterPosition(register_no=0x0C),
+    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT),
+)
+CONTROL_FW_MID = GrowattInputRegister(
+    position=GrowattRegisterPosition(register_no=0x0D),
+    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT),
+)
+CONTROL_FW_LOW = GrowattInputRegister(
+    position=GrowattRegisterPosition(register_no=0x0E),
+    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT),
+)
+
+
+def parse_noah_firmware(noah_registers: GroBroRegisters):
+    """Liest High/Mid/Low Register aus KNOWN_NOAH_REGISTERS und erstellt Firmware-Version."""
+    def read_register(name: str):
+        reg = noah_registers.input_registers.get(name)
+        if reg and reg.growatt:
+            # Dummy-Rohwert, später durch echtes Auslesen ersetzen
+            raw_value = b"\x00\x00"
+            return reg.growatt.data.parse(raw_value)
+        return 0
+
+    high = read_register("control_fw_high") or 0
+    mid = read_register("control_fw_mid") or 0
+    low = read_register("control_fw_low") or 0
     return f"{high}.{mid}.{low}"
+
+
+# -----------------------------
+# Noah Firmware-Entity für Home Assistant
+# -----------------------------
+GROBRO_FIRMWARE = GroBroInputRegister(
+    growatt=CONTROL_FW_HIGH,  # Nur ein Register nötig, Parse übernimmt High/Mid/Low
+    homeassistant=HomeassistantInputRegister(
+        name="firmware_version",
+        publish=True,
+        state_class="measurement",
+        device_class="firmware",
+    ),
+)
+
+# Fügt die Firmware-Version in die bekannten Noah-Register ein
+KNOWN_NOAH_REGISTERS.input_registers["firmware_version"] = GROBRO_FIRMWARE
+KNOWN_NOAH_REGISTERS.input_registers["control_fw_high"] = GroBroInputRegister(
+    growatt=CONTROL_FW_HIGH,
+    homeassistant=HomeassistantInputRegister(name="control_fw_high", publish=False),
+)
+KNOWN_NOAH_REGISTERS.input_registers["control_fw_mid"] = GroBroInputRegister(
+    growatt=CONTROL_FW_MID,
+    homeassistant=HomeassistantInputRegister(name="control_fw_mid", publish=False),
+)
+KNOWN_NOAH_REGISTERS.input_registers["control_fw_low"] = GroBroInputRegister(
+    growatt=CONTROL_FW_LOW,
+    homeassistant=HomeassistantInputRegister(name="control_fw_low", publish=False),
+)
