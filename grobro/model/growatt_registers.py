@@ -1,4 +1,4 @@
-from typing import Optional, Union
+from typing import Optional, Union, Callable
 from enum import Enum
 from pydantic import BaseModel
 import importlib.resources as resources
@@ -167,9 +167,9 @@ CONTROL_FW_LOW = GrowattInputRegister(
 # -----------------------------
 # Noah Firmware-Entity für Home Assistant
 # -----------------------------
-def parse_noah_firmware(input_registers: dict[str, GroBroInputRegister], read_raw_register):
+def read_noah_firmware(read_raw_register: Callable[[int, int], bytes]) -> str:
     """
-    Liest die High/Mid/Low-Register von Noah aus und erzeugt Firmware-Version.
+    Liest High/Mid/Low-Register und erzeugt Firmware-Version als String.
     read_raw_register(register_no: int, size: int) -> bytes
     """
     high_raw = read_raw_register(CONTROL_FW_HIGH.position.register_no, CONTROL_FW_HIGH.position.size)
@@ -183,18 +183,35 @@ def parse_noah_firmware(input_registers: dict[str, GroBroInputRegister], read_ra
     return f"{high}.{mid}.{low}"
 
 
-GROBRO_FIRMWARE = GroBroInputRegister(
-    growatt=CONTROL_FW_HIGH,  # Parse übernimmt High/Mid/Low
+class NoahFirmwareEntity(BaseModel):
+    name: str = "firmware_version"
+    publish: bool = True
+    state_class: str = "measurement"
+    device_class: str = "firmware"
+    _read_func: Optional[Callable[[], str]] = None
+
+    def value(self) -> str:
+        if self._read_func:
+            return self._read_func()
+        return "0.0.0"
+
+
+# -----------------------------
+# Firmware direkt in Home Assistant verfügbar
+# -----------------------------
+NOAH_FIRMWARE = NoahFirmwareEntity(_read_func=lambda: read_noah_firmware(lambda reg_no, size: b"\x01\x02"))  # Platzhalter: echte Lese-Funktion einsetzen
+
+KNOWN_NOAH_REGISTERS.input_registers["firmware_version"] = GroBroInputRegister(
+    growatt=CONTROL_FW_HIGH,  # nur intern
     homeassistant=HomeassistantInputRegister(
-        name="firmware_version",
-        publish=True,
-        state_class="measurement",
-        device_class="firmware",
+        name=NOAH_FIRMWARE.name,
+        publish=NOAH_FIRMWARE.publish,
+        state_class=NOAH_FIRMWARE.state_class,
+        device_class=NOAH_FIRMWARE.device_class,
     ),
 )
 
-# Fügt die Firmware-Version in die bekannten Noah-Register ein
-KNOWN_NOAH_REGISTERS.input_registers["firmware_version"] = GROBRO_FIRMWARE
+# Die Low/Mid/High Register selbst werden nicht veröffentlicht
 KNOWN_NOAH_REGISTERS.input_registers["control_fw_high"] = GroBroInputRegister(
     growatt=CONTROL_FW_HIGH,
     homeassistant=HomeassistantInputRegister(name="control_fw_high", publish=False),
