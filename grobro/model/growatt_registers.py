@@ -134,33 +134,59 @@ class GroBroRegisters(BaseModel):
     holding_registers: dict[str, GroBroHoldingRegister]
 
 
-# --- Noah Firmware Register ---
-CONTROL_FW = GroBroInputRegister(
-    growatt=GrowattInputRegister(
-        position=GrowattRegisterPosition(register_no=0x0C),  # High-Byte Start
-        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.STRING)
-    ),
-    homeassistant=HomeassistantInputRegister(
-        name="Noah Firmware",
-        publish=True,
-        state_class="measurement",
-        device_class="firmware",
-        unit_of_measurement=None,
-        icon="mdi:chip"
-    )
-)
-
-
-# --- Laden bestehender Register ---
-with resources.files(__package__).joinpath("growatt_neo_registers.json").open("rb") as f:
+with resources.files(__package__).joinpath("growatt_neo_registers.json").open(
+    "rb"
+) as f:
     KNOWN_NEO_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
-
-with resources.files(__package__).joinpath("growatt_noah_registers.json").open("rb") as f:
+with resources.files(__package__).joinpath("growatt_noah_registers.json").open(
+    "rb"
+) as f:
     KNOWN_NOAH_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
-with resources.files(__package__).joinpath("growatt_nexa_registers.json").open("rb") as f:
+with resources.files(__package__).joinpath("growatt_nexa_registers.json").open(
+    "rb"
+) as f:
     KNOWN_NEXA_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
 
-# --- Noah Firmware in die Input Registers einfügen ---
-KNOWN_NOAH_REGISTERS.input_registers["firmware"] = CONTROL_FW
+# -----------------------------
+# Noah Firmware Register
+# -----------------------------
+NOAH_FIRMWARE_REGISTERS = {
+    "high": GrowattInputRegister(
+        position=GrowattRegisterPosition(register_no=0x0C),
+        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
+    ),
+    "mid": GrowattInputRegister(
+        position=GrowattRegisterPosition(register_no=0x0D),
+        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
+    ),
+    "low": GrowattInputRegister(
+        position=GrowattRegisterPosition(register_no=0x0E),
+        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
+    ),
+}
+
+
+def parse_noah_firmware(high: int, mid: int, low: int) -> str:
+    """Kombiniert die 3 Registerwerte zu einem Firmware-String"""
+    return f"{high}.{mid}.{low}"
+
+
+def update_noah_firmware_entity(noah_device, hass):
+    """
+    Liest die Noah-Firmware aus und aktualisiert die Entität in Home Assistant.
+    noah_device: Objekt, das die Registerwerte ausliest
+    hass: Home Assistant-Core Objekt
+    """
+    high = noah_device.read_register(NOAH_FIRMWARE_REGISTERS["high"].position.register_no)
+    mid = noah_device.read_register(NOAH_FIRMWARE_REGISTERS["mid"].position.register_no)
+    low = noah_device.read_register(NOAH_FIRMWARE_REGISTERS["low"].position.register_no)
+    firmware_str = parse_noah_firmware(high, mid, low)
+
+    # Home Assistant Entity
+    entity_id = "sensor.noah_firmware"
+    hass.states.set(entity_id, firmware_str, {
+        "friendly_name": "Noah Firmware",
+        "icon": "mdi:chip",
+    })
