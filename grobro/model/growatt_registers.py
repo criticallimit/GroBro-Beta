@@ -147,3 +147,64 @@ with resources.files(__package__).joinpath("growatt_nexa_registers.json").open(
     "rb"
 ) as f:
     KNOWN_NEXA_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
+
+
+# --- Firmware-Register definieren ---
+CONTROL_FW_HIGH = GrowattInputRegister(
+    position=GrowattRegisterPosition(register_no=0x0C),
+    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
+)
+
+CONTROL_FW_MID = GrowattInputRegister(
+    position=GrowattRegisterPosition(register_no=0x0D),
+    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
+)
+
+CONTROL_FW_LOW = GrowattInputRegister(
+    position=GrowattRegisterPosition(register_no=0x0E),
+    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
+)
+
+# --- Home Assistant-Mapping ---
+HA_FW_HIGH = HomeassistantInputRegister(
+    name="Firmware High Byte",
+    publish=True
+)
+
+HA_FW_MID = HomeassistantInputRegister(
+    name="Firmware Mid Byte",
+    publish=True
+)
+
+HA_FW_LOW = HomeassistantInputRegister(
+    name="Firmware Low Byte",
+    publish=True
+)
+
+# --- GroBro Input Register ---
+GROBRO_FW_HIGH = GroBroInputRegister(
+    growatt=CONTROL_FW_HIGH,
+    homeassistant=HA_FW_HIGH
+)
+
+GROBRO_FW_MID = GroBroInputRegister(
+    growatt=CONTROL_FW_MID,
+    homeassistant=HA_FW_MID
+)
+
+GROBRO_FW_LOW = GroBroInputRegister(
+    growatt=CONTROL_FW_LOW,
+    homeassistant=HA_FW_LOW
+)
+
+# --- In die bekannten NEO Register aufnehmen ---
+KNOWN_NEO_REGISTERS.input_registers.update({
+    "firmware_high": GROBRO_FW_HIGH,
+    "firmware_mid": GROBRO_FW_MID,
+    "firmware_low": GROBRO_FW_LOW,
+})
+
+
+# --- Hilfsfunktion: Firmwarebytes zu lesbarer Version ---
+def parse_firmware_version(high: int, mid: int, low: int) -> str:
+    return f"{high}.{mid}.{low}"
