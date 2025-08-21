@@ -5,9 +5,7 @@ import importlib.resources as resources
 import json
 import struct
 
-# -----------------------------
-# Growatt Daten-Typen
-# -----------------------------
+
 class GrowattRegisterDataTypes(str, Enum):
     ENUM = "ENUM"
     STRING = "STRING"
@@ -69,9 +67,6 @@ class GrowattRegisterDataType(BaseModel):
             return value
 
 
-# -----------------------------
-# Growatt Register-Strukturen
-# -----------------------------
 class GrowattRegisterPosition(BaseModel):
     register_no: int
     offset: int = 0
@@ -83,9 +78,6 @@ class GrowattInputRegister(BaseModel):
     data: GrowattRegisterDataType
 
 
-# -----------------------------
-# Home Assistant Modelle
-# -----------------------------
 class HomeAssistantHoldingRegister(BaseModel):
     name: str
     publish: bool
@@ -127,9 +119,6 @@ class HomeAssistantInputRegister(BaseModel):
     payload: dict[str, Union[str, float, int]] = {}
 
 
-# -----------------------------
-# GroBro Strukturen
-# -----------------------------
 class GroBroInputRegister(BaseModel):
     growatt: GrowattInputRegister
     homeassistant: HomeassistantInputRegister
@@ -146,61 +135,51 @@ class GroBroRegisters(BaseModel):
 
 
 # -----------------------------
-# Firmware Register (Noah)
+# Noah Firmware-Register
 # -----------------------------
-CONTROL_FW_HIGH = GrowattInputRegister(
-    position=GrowattRegisterPosition(register_no=0x0C),
-    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
-)
-
-CONTROL_FW_MID = GrowattInputRegister(
-    position=GrowattRegisterPosition(register_no=0x0D),
-    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
-)
-
-CONTROL_FW_LOW = GrowattInputRegister(
-    position=GrowattRegisterPosition(register_no=0x0E),
-    data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
-)
-
-
 GROBRO_FIRMWARE = GroBroInputRegister(
     growatt=GrowattInputRegister(
-        position=GrowattRegisterPosition(register_no=0x0C, size=6),  # high/mid/low zusammen
-        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.STRING)
+        position=GrowattRegisterPosition(register_no=0x0C, size=6),  # 0x0C..0x0E
+        data=GrowattRegisterDataType(data_type=GrowattRegisterDataTypes.INT)
     ),
     homeassistant=HomeassistantInputRegister(
         name="firmware_version",
-        publish=True
+        publish=True,
+        state_class=None,
+        device_class=None,
+        unit_of_measurement=None,
+        icon="mdi:chip"
     )
 )
 
 
+def parse_noah_firmware(data_raw: bytes) -> str:
+    """
+    Erwartet 6 Bytes: High(2) | Mid(2) | Low(2)
+    Gibt lesbare Firmware zurück, z.B. '1.23.4'
+    """
+    if not data_raw or len(data_raw) != 6:
+        return "unknown"
+
+    high, mid, low = struct.unpack("!HHH", data_raw)
+    return f"{high}.{mid}.{low}"
+
+
+# Parse-Methode für die Firmware-Entität setzen
+GROBRO_FIRMWARE.growatt.parse = parse_noah_firmware
+
+
 # -----------------------------
-# Lade bekannte Register
+# Vorhandene Register laden
 # -----------------------------
-with resources.files(__package__).joinpath("growatt_neo_registers.json").open(
-    "rb"
-) as f:
+with resources.files(__package__).joinpath("growatt_neo_registers.json").open("rb") as f:
     KNOWN_NEO_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
-with resources.files(__package__).joinpath("growatt_noah_registers.json").open(
-    "rb"
-) as f:
+with resources.files(__package__).joinpath("growatt_noah_registers.json").open("rb") as f:
     KNOWN_NOAH_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
 
-with resources.files(__package__).joinpath("growatt_nexa_registers.json").open(
-    "rb"
-) as f:
+with resources.files(__package__).joinpath("growatt_nexa_registers.json").open("rb") as f:
     KNOWN_NEXA_REGISTERS = GroBroRegisters.parse_obj(json.load(f))
-
-
-# -----------------------------
-# Firmware direkt in Noah Input-Register einfügen
-# -----------------------------
-KNOWN_NOAH_REGISTERS.input_registers.update({
-    "firmware_version": GROBRO_FIRMWARE
-})
 
 # --- Hilfsfunktion: Firmwarebytes zu lesbarer Version ---
 def parse_firmware_version(high: int, mid: int, low: int) -> str:
