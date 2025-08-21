@@ -2,6 +2,11 @@
 This is for personal testing. 
 Changes are not documented and there may be temporary unexpected behavior of this Add-on
 
+## Beta 36
+
+added Noah firmware as entity
+
+
 ## Beta 35
 
 added Noah Serial-Parts 1-4 for Bat3 and Bat4.
