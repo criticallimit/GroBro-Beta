@@ -164,27 +164,27 @@ CONTROL_FW_LOW = GrowattInputRegister(
 )
 
 
-def parse_noah_firmware(noah_registers: GroBroRegisters):
-    """Liest High/Mid/Low Register aus KNOWN_NOAH_REGISTERS und erstellt Firmware-Version."""
-    def read_register(name: str):
-        reg = noah_registers.input_registers.get(name)
-        if reg and reg.growatt:
-            # Dummy-Rohwert, später durch echtes Auslesen ersetzen
-            raw_value = b"\x00\x00"
-            return reg.growatt.data.parse(raw_value)
-        return 0
-
-    high = read_register("control_fw_high") or 0
-    mid = read_register("control_fw_mid") or 0
-    low = read_register("control_fw_low") or 0
-    return f"{high}.{mid}.{low}"
-
-
 # -----------------------------
 # Noah Firmware-Entity für Home Assistant
 # -----------------------------
+def parse_noah_firmware(input_registers: dict[str, GroBroInputRegister], read_raw_register):
+    """
+    Liest die High/Mid/Low-Register von Noah aus und erzeugt Firmware-Version.
+    read_raw_register(register_no: int, size: int) -> bytes
+    """
+    high_raw = read_raw_register(CONTROL_FW_HIGH.position.register_no, CONTROL_FW_HIGH.position.size)
+    mid_raw = read_raw_register(CONTROL_FW_MID.position.register_no, CONTROL_FW_MID.position.size)
+    low_raw = read_raw_register(CONTROL_FW_LOW.position.register_no, CONTROL_FW_LOW.position.size)
+
+    high = CONTROL_FW_HIGH.data.parse(high_raw) or 0
+    mid = CONTROL_FW_MID.data.parse(mid_raw) or 0
+    low = CONTROL_FW_LOW.data.parse(low_raw) or 0
+
+    return f"{high}.{mid}.{low}"
+
+
 GROBRO_FIRMWARE = GroBroInputRegister(
-    growatt=CONTROL_FW_HIGH,  # Nur ein Register nötig, Parse übernimmt High/Mid/Low
+    growatt=CONTROL_FW_HIGH,  # Parse übernimmt High/Mid/Low
     homeassistant=HomeassistantInputRegister(
         name="firmware_version",
         publish=True,
