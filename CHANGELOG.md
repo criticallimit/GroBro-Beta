@@ -2,9 +2,9 @@
 This is for personal testing. 
 Changes are not documented and there may be temporary unexpected behavior of this Add-on
 
-## Beta 36
+## Beta 39
 
-added Noah firmware as entity
+some tests
 
 
 ## Beta 35
