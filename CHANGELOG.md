@@ -4,7 +4,7 @@ Changes are not documented and there may be temporary unexpected behavior of thi
 
 ## Beta 40
 
-some more tests and improvments
+All Bat-SoC now INT
 
 
 ## Beta 35
