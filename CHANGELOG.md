@@ -2,9 +2,9 @@
 This is for personal testing. 
 Changes are not documented and there may be temporary unexpected behavior of this Add-on
 
-## Beta 39
+## Beta 40
 
-some tests
+some more tests and improvments
 
 
 ## Beta 35
