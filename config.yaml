@@ -1,6 +1,6 @@
 name: "GroBro-Beta"
 description: "Growatt MQTT Message Broker"
-version: "Beta43"
+version: "Beta44"
 slug: "grobro-beta"
 init: false
 url: https://github.com/criticallimit/GroBro
