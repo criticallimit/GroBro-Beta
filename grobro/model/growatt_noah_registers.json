@@ -904,10 +904,10 @@
       "growatt": {
         "position": {
           "register_no": 252
-        },
-        "data": {
+          },
+          "data": {
           "data_type": "INT"
-        }
+          }
       },
       "homeassistant": {
         "publish": true,
