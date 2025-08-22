@@ -1,6 +1,6 @@
 # This fork is for the Home Assistant Add-on of GroBro
 
-to add GroBro-Beta to your Home Assistant Addons please ad the Repository:
+to add GroBro-Beta to your Home Assistant Addons use this link in Repositories:
 
 https://github.com/criticcallimit/GroBro
 
