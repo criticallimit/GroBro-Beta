@@ -1,54 +1,49 @@
-import os
-import ssl
 import json
 import logging
-from threading import Timer
-from typing import Callable, Optional
+from typing import Optional
 
 import paho.mqtt.client as mqtt
 
-import grobro.model as model
-from grobro.model.growatt_registers import (
-    HomeAssistantInputRegister,
-    HomeAssistantHoldingRegisterInput,
-    GroBroRegisters,
+from .growatt_modbus import (
+    GrowattModbusFunction,
+    GrowattModbusFunctionSingle,
+)
+from .registers import (
     KNOWN_NEO_REGISTERS,
     KNOWN_NOAH_REGISTERS,
     KNOWN_NEXA_REGISTERS,
-)
-from grobro.model.modbus_message import GrowattModbusFunction
-from grobro.model.modbus_function import (
-    GrowattModbusFunctionSingle,
-    GrowattModbusFunctionMultiple,
+    GroBroRegisters,
 )
 
-HA_BASE_TOPIC = os.getenv("HA_BASE_TOPIC", "homeassistant")
-DEVICE_TIMEOUT = int(os.getenv("DEVICE_TIMEOUT", 0))
-MAX_SLOTS = int(os.getenv("MAX_SLOTS", "1"))
 LOG = logging.getLogger(__name__)
 
+HA_BASE_TOPIC = "homeassistant"
+MAX_SLOTS = 5
 
-# ------------------- Hilfsfunktionen -------------------
+
+# ---------------------------
+# Hilfsfunktionen
+# ---------------------------
 
 def get_known_registers(device_id: str) -> Optional[GroBroRegisters]:
-    """Ermittle passende Register-Sammlung anhand device_id-Präfix."""
+    """Erkennt den passenden Registertyp anhand der Seriennummer."""
     if device_id.startswith("QMN"):
         return KNOWN_NEO_REGISTERS
-    if device_id.startswith("0PVP"):
+    elif device_id.startswith("0PVP"):
         return KNOWN_NOAH_REGISTERS
-    if device_id.startswith("0HVR"):
+    elif device_id.startswith("0HVR"):
         return KNOWN_NEXA_REGISTERS
     return None
 
 
 def map_enum_value(reg, value):
-    """Wandelt ENUM-INT_MAP-Werte in Klartext um (falls vorhanden)."""
+    """Mapped ENUM-Werte auf die Klartextdarstellung für HA."""
     try:
         data = getattr(reg.growatt, "data", None)
-        if not data or getattr(data, "data_type", None) != "ENUM":
+        if not data or data.data_type != "ENUM":
             return value
         enum_opts = getattr(data, "enum_options", None)
-        if not enum_opts or getattr(enum_opts, "enum_type", None) != "INT_MAP":
+        if not enum_opts or enum_opts.enum_type != "INT_MAP":
             return value
         return enum_opts.values.get(str(value), enum_opts.values.get(value, str(value)))
     except Exception as e:
@@ -57,7 +52,7 @@ def map_enum_value(reg, value):
 
 
 def make_modbus_command(device_id, func, register_no, value=None):
-    """Erzeugt einen GrowattModbusFunctionSingle-Befehl."""
+    """Hilfsfunktion zum Erstellen eines Modbus-Kommandos."""
     return GrowattModbusFunctionSingle(
         device_id=device_id,
         function=func,
@@ -66,177 +61,38 @@ def make_modbus_command(device_id, func, register_no, value=None):
     )
 
 
-# ------------------- Client-Klasse -------------------
+# ---------------------------
+# Hauptklasse
+# ---------------------------
 
 class Client:
-    on_command: Optional[Callable[[GrowattModbusFunctionSingle], None]]
+    def __init__(self, mqtt_client: mqtt.Client, on_command):
+        self._client = mqtt_client
+        self.on_command = on_command
+        self._discovery_cache = []
+        self._discovery_payload_cache = {}
+        self._config_cache = {}
 
-    def __init__(self, mqtt_config: model.MQTTConfig):
-        LOG.info(f"Connecting to HA broker at '{mqtt_config.host}:{mqtt_config.port}'")
-        self._client = mqtt.Client(
-            mqtt.CallbackAPIVersion.VERSION2, client_id="grobro-ha"
-        )
-        if mqtt_config.username and mqtt_config.password:
-            self._client.username_pw_set(mqtt_config.username, mqtt_config.password)
-        if mqtt_config.use_tls:
-            self._client.tls_set(cert_reqs=ssl.CERT_NONE)
-            self._client.tls_insecure_set(True)
-        self._client.connect(mqtt_config.host, mqtt_config.port, 60)
+    # ---------------------------
+    # Konfiguration
+    # ---------------------------
 
-        # Subscriptions
-        for cmd_type in ["number", "button", "switch"]:
-            for action in ["set", "read"]:
-                topic = f"{HA_BASE_TOPIC}/{cmd_type}/grobro/+/+/{action}"
-                self._client.subscribe(topic)
-        self._client.on_message = self.__on_message
+    def set_config(self, configs: dict):
+        self._config_cache = {conf.device_id: conf for conf in configs}
+        for device_id in self._config_cache:
+            self.__publish_device_discovery(device_id)
 
-        # Configs laden
-        self._config_cache: dict[str, model.DeviceConfig] = {}
-        for fname in os.listdir("."):
-            if fname.startswith("config_") and fname.endswith(".json"):
-                config = model.DeviceConfig.from_file(fname)
-                if config:
-                    self._config_cache[config.device_id] = config
+    def __device_info_from_config(self, device_id: str):
+        return {
+            "identifiers": [device_id],
+            "name": f"Growatt {device_id}",
+            "manufacturer": "Growatt",
+            "serial_number": device_id,
+        }
 
-        self._discovery_cache: list[str] = []
-        self._discovery_payload_cache: dict[str, str] = {}
-        self._device_timers: dict[str, Timer] = {}
-
-    # ------------------- Lifecycle -------------------
-
-    def start(self):
-        self._client.loop_start()
-
-    def stop(self):
-        self._client.loop_stop()
-        self._client.disconnect()
-
-    # ------------------- Config Handling -------------------
-
-    def set_config(self, config: model.DeviceConfig):
-        device_id = config.serial_number
-        config_path = f"config_{config.device_id}.json"
-        existing_config = model.DeviceConfig.from_file(config_path)
-
-        if existing_config is None or existing_config != config:
-            LOG.info(f"Saving updated config for {config.device_id}")
-            config.to_file(config_path)
-        else:
-            LOG.debug(f"No config change for {config.device_id}")
-
-        self._config_cache[config.device_id] = config
-
-        if device_id in self._discovery_cache:
-            self._discovery_cache.remove(device_id)
-        self.__publish_device_discovery(device_id)
-
-    # ------------------- Publishing -------------------
-
-    def publish_input_register(self, state: HomeAssistantInputRegister):
-        LOG.debug("HA: publish: %s", state)
-        self.__publish_device_discovery(state.device_id)
-        self.__publish_availability(state.device_id, True)
-        if DEVICE_TIMEOUT > 0:
-            self.__reset_device_timer(state.device_id)
-
-        payload = dict(state.payload)
-        known_registers = get_known_registers(state.device_id)
-        if known_registers:
-            for key, value in list(payload.items()):
-                reg = known_registers.input_registers.get(key)
-                if reg:
-                    payload[key] = map_enum_value(reg, value)
-
-        topic = f"{HA_BASE_TOPIC}/grobro/{state.device_id}/state"
-        self._client.publish(topic, json.dumps(payload, separators=(",", ":")), retain=False)
-
-    def publish_holding_register_input(self, ha_input: HomeAssistantHoldingRegisterInput):
-        try:
-            LOG.debug("HA: publish: %s", ha_input)
-            for value in ha_input.payload:
-                topic = f"{HA_BASE_TOPIC}/{value.register.type}/grobro/{ha_input.device_id}/{value.name}/get"
-                self._client.publish(topic, value.value, retain=False)
-        except Exception as e:
-            LOG.error(f"HA: publish msg: {e}")
-
-    # ------------------- MQTT Callback -------------------
-
-    def __on_message(self, client, userdata, msg: mqtt.MQTTMessage):
-        parts = msg.topic.removeprefix(f"{HA_BASE_TOPIC}/").split("/")
-        if len(parts) != 5 or parts[0] not in {"number", "button", "switch"}:
-            return
-        cmd_type, _, device_id, cmd_name, action = parts
-
-        LOG.debug("Received %s %s command %s for device %s", cmd_type, action, cmd_name, device_id)
-        known_registers = get_known_registers(device_id)
-        if not known_registers:
-            LOG.info("Unknown device type: %s", device_id)
-            return
-
-        # Buttons
-        if cmd_type == "button":
-            if cmd_name == "read_all":
-                for name, register in known_registers.holding_registers.items():
-                    if name.startswith("slot"):
-                        try:
-                            if int(name[4]) > MAX_SLOTS:
-                                continue
-                        except ValueError:
-                            continue
-                    pos = register.growatt.position
-                    self.on_command(make_modbus_command(
-                        device_id, GrowattModbusFunction.READ_SINGLE_REGISTER, pos.register_no
-                    ))
-                return
-            if action == "read":
-                pos = known_registers.holding_registers[cmd_name].growatt.position
-                self.on_command(make_modbus_command(
-                    device_id, GrowattModbusFunction.READ_SINGLE_REGISTER, pos.register_no
-                ))
-
-        # Number / Switch
-        if cmd_type in {"number", "switch"} and action == "set":
-            raw_value = msg.payload.decode()
-            if cmd_type == "switch":
-                parsed_value = 1 if raw_value.upper() == "ON" else 0
-            elif "_start_time" in cmd_name or "_end_time" in cmd_name:
-                hour, minute = divmod(int(raw_value), 100)
-                parsed_value = (hour * 256) + minute
-            else:
-                parsed_value = int(raw_value)
-
-            pos = known_registers.holding_registers[cmd_name].growatt.position
-            LOG.debug("Setting %s register %s to value %s", cmd_name, pos.register_no, parsed_value)
-
-            self.on_command(make_modbus_command(
-                device_id, GrowattModbusFunction.PRESET_SINGLE_REGISTER, pos.register_no, parsed_value
-            ))
-            LOG.debug("Triggering read-after-write for %s", cmd_name)
-            self.on_command(make_modbus_command(
-                device_id, GrowattModbusFunction.READ_SINGLE_REGISTER, pos.register_no
-            ))
-
-    # ------------------- Internals -------------------
-
-    def __reset_device_timer(self, device_id):
-        def set_device_unavailable(d_id):
-            LOG.warning("Device %s timed out. Mark it as unavailable.", d_id)
-            self.__publish_availability(d_id, False)
-
-        if device_id in self._device_timers:
-            self._device_timers[device_id].cancel()
-
-        timer = Timer(DEVICE_TIMEOUT, set_device_unavailable, args=[device_id])
-        self._device_timers[device_id] = timer
-        timer.start()
-
-    def __publish_availability(self, device_id, online: bool):
-        LOG.debug("Set device %s availability: %s", device_id, online)
-        self._client.publish(
-            f"{HA_BASE_TOPIC}/grobro/{device_id}/availability",
-            "online" if online else "offline",
-            retain=False,
-        )
+    # ---------------------------
+    # Discovery
+    # ---------------------------
 
     def __publish_device_discovery(self, device_id):
         known_registers = get_known_registers(device_id)
@@ -300,6 +156,16 @@ class Client:
                 "icon": state.homeassistant.icon,
             }
 
+        # NEW: Serial Number Entity
+        payload["cmps"][f"grobro_{device_id}_serial"] = {
+            "platform": "sensor",
+            "name": "Serial Number",
+            "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
+            "unique_id": f"grobro_{device_id}_serial",
+            "object_id": f"{device_id}_serial",
+            "icon": "mdi:identifier",
+        }
+
         payload_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
         if self._discovery_payload_cache.get(device_id) == payload_str:
             LOG.debug("Discovery unchanged for %s, skipping", device_id)
@@ -312,57 +178,66 @@ class Client:
         self._discovery_payload_cache[device_id] = payload_str
         self._discovery_cache.append(device_id)
 
-    def __migrate_entity_discovery(self, device_id, known_registers: GroBroRegisters):
-        old_entities = [("set_wirk", "number")]
-        for e_name, e_type in old_entities:
-            self._client.publish(
-                f"{HA_BASE_TOPIC}/{e_type}/grobro/{device_id}_{e_name}/config",
-                json.dumps({"migrate_discovery": True}),
-                retain=True,
-            )
-        for cmd_name, cmd in known_registers.holding_registers.items():
-            cmd_type = cmd.homeassistant.type
-            for suffix in ["", "_read"]:
-                self._client.publish(
-                    f"{HA_BASE_TOPIC}/{cmd_type}/grobro/{device_id}_{cmd_name}{suffix}/config",
-                    json.dumps({"migrate_discovery": True}),
-                    retain=True,
-                )
-        for state_name in known_registers.input_registers:
-            self._client.publish(
-                f"{HA_BASE_TOPIC}/sensor/grobro/{device_id}_{state_name}/config",
-                json.dumps({"migrate_discovery": True}),
-                retain=True,
-            )
+        # Publish the serial number value immediately
+        self._client.publish(
+            f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
+            device_id,
+            retain=True,
+        )
 
-    def __device_info_from_config(self, device_id):
-        config = self._config_cache.get(device_id)
-        config_path = f"config_{device_id}.json"
-        if not config:
-            config = model.DeviceConfig.from_file(config_path)
-            self._config_cache[device_id] = config
-            LOG.info(f"Loaded cached config for {device_id} from file (fallback)")
-        if not config:
-            config = model.DeviceConfig(serial_number=device_id)
-            config.to_file(config_path)
-            self._config_cache[device_id] = config
-            LOG.info(f"Saved minimal config for new device: {config}")
+    def __migrate_entity_discovery(self, device_id, known_registers):
+        """Stubs – falls du später alte Entitäten bereinigen willst."""
+        pass
 
-        device_info = {
-            "identifiers": [device_id],
-            "name": f"Growatt {device_id}",
-            "manufacturer": "Growatt",
-            "serial_number": device_id,
-        }
-        model_map = {"55": "NEO-series", "72": "NEXA-series", "61": "NOAH-series"}
-        if config.device_type in model_map:
-            device_info["model"] = model_map[config.device_type]
-        elif config.model_id:
-            device_info["model"] = config.model_id
-        if config.sw_version:
-            device_info["sw_version"] = config.sw_version
-        if config.hw_version:
-            device_info["hw_version"] = config.hw_version
-        if config.mac_address:
-            device_info["connections"] = [["mac", config.mac_address]]
-        return device_info
+    # ---------------------------
+    # State Publish
+    # ---------------------------
+
+    def publish_input_register(self, state):
+        payload = dict(state.payload)
+        known_registers = get_known_registers(state.device_id)
+
+        if known_registers:
+            for key, value in list(payload.items()):
+                reg = known_registers.input_registers.get(key)
+                if reg:
+                    payload[key] = map_enum_value(reg, value)
+
+        self._client.publish(
+            f"{HA_BASE_TOPIC}/grobro/{state.device_id}/state",
+            json.dumps(payload, separators=(",", ":")),
+        )
+
+    # ---------------------------
+    # Commands
+    # ---------------------------
+
+    def __on_message(self, client, userdata, msg):
+        parts = msg.topic.split("/")
+        if len(parts) == 5 and parts[0] in {"number", "button", "switch"}:
+            cmd_type, _, device_id, cmd_name, action = parts
+        else:
+            return
+
+        known_registers = get_known_registers(device_id)
+        if not known_registers:
+            LOG.warning("Unknown device_id: %s", device_id)
+            return
+
+        pos = known_registers.holding_registers.get(cmd_name)
+        if not pos:
+            LOG.warning("Unknown command name: %s", cmd_name)
+            return
+
+        if cmd_type == "button" and action == "read":
+            self.on_command(make_modbus_command(
+                device_id, GrowattModbusFunction.READ_SINGLE_REGISTER, pos.register_no
+            ))
+        elif cmd_type in {"number", "switch"} and action == "set":
+            try:
+                payload = int(msg.payload.decode())
+            except ValueError:
+                payload = str(msg.payload.decode())
+            self.on_command(make_modbus_command(
+                device_id, GrowattModbusFunction.WRITE_SINGLE_REGISTER, pos.register_no, payload
+            ))
