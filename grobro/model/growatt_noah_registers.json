@@ -1023,24 +1023,6 @@
         "icon": "mdi:percent"
       }
     },
-    "anforderung": {
-      "growatt": {
-        "position": {
-          "register_no": 252,
-          "offset": 0,
-          "size": 2          
-          
-        },
-        "data": {
-          "data_type": "INT"
-        }
-      },
-      "homeassistant": {
-        "publish": true,
-        "name": "Anforderung",
-        "unit_of_measurement": "W"
-      }
-    },    
     "heater": {
       "growatt": {
         "position": {
