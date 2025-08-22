@@ -919,6 +919,28 @@
         "step": 1
       }
     },
+    "work_mode": {
+      "growatt": {
+        "position": {
+          "register_no": 14,
+          "offset": 0,
+          "size": 1
+        },
+        "data": {
+          "data_type": "INT"
+        },
+        "write_single_register": true
+      },
+      "homeassistant": {
+        "publish": true,
+        "name": "NOAH Work Mode",
+        "type": "number",
+        "min": 0,
+        "max": 1,
+        "step": 1,
+        "icon": "mdi:power-plug"
+      }
+    },   
     "discharge_limit": {
       "growatt": {
         "position": {
