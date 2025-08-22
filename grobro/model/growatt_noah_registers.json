@@ -903,7 +903,10 @@
     "default_power": {
       "growatt": {
         "position": {
-          "register_no": 252
+          "register_no": 252,
+          "offset": 0,
+          "size": 2          
+          
         },
         "data": {
           "data_type": "INT"
@@ -922,7 +925,7 @@
     "discharge_limit": {
       "growatt": {
         "position": {
-          "register_no": 251
+          "register_no": 251,
           "offset": 0,
           "size": 2          
         },
@@ -943,7 +946,7 @@
     "charge_limit": {
       "growatt": {
         "position": {
-          "register_no": 250
+          "register_no": 250,
           "offset": 0,
           "size": 2          
         },
