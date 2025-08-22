@@ -1384,23 +1384,6 @@
         "icon": "mdi:solar-power"
       }
     },
-    "bat1_ser_part_1": {
-      "growatt": {
-        "position": {
-          "register_no": 21,
-          "offset": 0,
-          "size": 4
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Bat1 Serial Part 1",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },
  "bat2_ser_part_1": {
       "growatt": {
         "position": {
@@ -1500,23 +1483,6 @@
         "icon": "mdi:solar-power"
       }
     },
- "bat1_ser_part_3": {
-      "growatt": {
-        "position": {
-          "register_no": 25,
-          "offset": 0,
-          "size": 4
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Bat1 Serial Part 3",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },
     "bat2_ser_part_3": {
       "growatt": {
         "position": {
@@ -1568,23 +1534,6 @@
         "icon": "mdi:identifier"
       }
     },
-    "bat1_ser_part_2": {
-      "growatt": {
-        "position": {
-          "register_no": 23,
-          "offset": 0,
-          "size": 4
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Bat1 Serial Part 2",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },
     "bat2_ser_part_2": {
       "growatt": {
         "position": {
@@ -1632,23 +1581,6 @@
       },
       "homeassistant": {
         "name": "Bat4 Serial Part 2",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },
-    "bat1_ser_part_4": {
-      "growatt": {
-        "position": {
-          "register_no": 27,
-          "offset": 0,
-          "size": 4
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Bat1 Serial Part 4",
         "publish": true,
         "icon": "mdi:identifier"
       }
