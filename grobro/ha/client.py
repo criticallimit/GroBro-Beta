@@ -117,7 +117,7 @@ class Client:
     # ------------------- Config Handling -------------------
 
     def set_config(self, config: model.DeviceConfig):
-        device_id = config.serial_number  # bleibt wie in deiner Vorlage
+        device_id = config.serial_number
         config_path = f"config_{config.device_id}.json"
         existing_config = model.DeviceConfig.from_file(config_path)
         if existing_config is None or existing_config != config:
@@ -316,7 +316,7 @@ class Client:
         # NEW: Serial Number Entity (eigene Entity als Sensor)
         payload["cmps"][f"grobro_{device_id}_serial"] = {
             "platform": "sensor",
-            "name": "Serial Number",
+            "name": "Battery 1 Serial",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
             "unique_id": f"grobro_{device_id}_serial",
             "object_id": f"{device_id}_serial",
