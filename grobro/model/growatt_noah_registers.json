@@ -924,12 +924,11 @@
         "position": {
           "register_no": 8,
           "offset": 0,
-          "size": 1
+          "size": 2
         },
         "data": {
           "data_type": "INT"
-        },
-        "write_single_register": true
+        }
       },
       "homeassistant": {
         "publish": true,
