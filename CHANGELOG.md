@@ -10,3 +10,4 @@ Changes are not documented and there may be temporary unexpected behavior of thi
 + added Heater Sensor
 + added Temp sensors Bat 1-4
 + added Serial Numbers for Bat 1-4
++ Register 102 removed (showing undocumented Voltage)
