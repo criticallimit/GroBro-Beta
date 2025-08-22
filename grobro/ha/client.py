@@ -316,7 +316,7 @@ class Client:
         # NEW: Serial Number Entity (eigene Entity als Sensor)
         payload["cmps"][f"grobro_{device_id}_serial"] = {
             "platform": "sensor",
-            "name": "Battery 1 Serial",
+            "name": "Device SN",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
             "unique_id": f"grobro_{device_id}_serial",
             "object_id": f"{device_id}_serial",
