@@ -1,3 +1,11 @@
+# This fork is for the Home Assistant Add-on of GroBro
+
+to add GroBro-Beta to your Home Assistant Addons please ad the Repository:
+
+https://github.com/criticcallimit/GroBro
+
+
+
 # GroBro - Growatt MQTT Message Broker
 
 GroBro is a bridge service that decodes encrypted MQTT packets from Growatt NEO, NOAH and NEXA devices and republishes them in a format compatible with Home Assistant. 
