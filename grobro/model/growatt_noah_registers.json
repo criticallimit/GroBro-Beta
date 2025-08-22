@@ -1396,7 +1396,7 @@
         }
       },
       "homeassistant": {
-        "name": "Serial Part 1",
+        "name": "Bat1 Serial Part 1",
         "publish": true,
         "icon": "mdi:identifier"
       }
