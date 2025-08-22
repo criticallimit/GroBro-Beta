@@ -6,6 +6,7 @@ Changes are not documented and there may be temporary unexpected behavior of thi
 
 + added Sensor for Device Serial Number
 + removed the 4 Parts for Bat1 Serial Number( these are now in one sensor see above)
++ small Code improvements
 
 
 # 1.0.1
