@@ -52,7 +52,7 @@
       },
       "homeassistant": {
         "name": "Inverter run state",
-        "publish": false,
+        "publish": true,
         "icon": "mdi:alert-circle"
       }
     },
