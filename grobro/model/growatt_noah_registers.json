@@ -978,26 +978,6 @@
         "step": 1
       }
     },
-    "priority_mode": {
-        "growatt": {
-            "position": {
-                "register_no": 8,
-                "offset": 0,
-                "size": 2
-            },
-            "data": {
-                "data_type": "INT"
-            }
-        },
-        "homeassistant": {
-            "publish": true,
-            "name": "Priority Mode",
-            "type": "number",
-            "min": 0,
-            "max": 2,
-            "step": 1
-        }
-    },
   "input_registers": {
     "bat_2_soc_pct": {
       "growatt": {
@@ -1096,6 +1076,31 @@
         "icon": "mdi:radiator"
       }
     },
+    "priority_mode": {
+      "growatt": {
+        "position": {
+          "register_no": 8,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "ENUM",
+          "enum_options": {
+            "enum_type": "INT_MAP",
+            "values": {
+              "0": "Load First",
+              "1": "Battery First",
+              "2": "Grid First"
+            }
+          }
+        }
+      },
+      "homeassistant": {
+        "name": "Priority Mode",
+        "publish": true,
+        "icon": "mdi:alert-circle"
+      }
+    },    
     "bat_sysstate": {
       "growatt": {
         "position": {
