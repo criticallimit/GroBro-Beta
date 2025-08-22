@@ -923,6 +923,8 @@
       "growatt": {
         "position": {
           "register_no": 251
+          "offset": 0,
+          "size": 2          
         },
         "data": {
           "data_type": "INT"
@@ -942,6 +944,8 @@
       "growatt": {
         "position": {
           "register_no": 250
+          "offset": 0,
+          "size": 2          
         },
         "data": {
           "data_type": "INT"
