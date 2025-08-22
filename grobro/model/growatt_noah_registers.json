@@ -922,7 +922,7 @@
     "work_mode": {
       "growatt": {
         "position": {
-          "register_no": 14,
+          "register_no": 8,
           "offset": 0,
           "size": 1
         },
