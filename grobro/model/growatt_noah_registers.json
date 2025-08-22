@@ -1089,20 +1089,15 @@
           "size": 2
         },
         "data": {
-          "data_type": "ENUM",
-          "enum_options": {
-            "enum_type": "INT_MAP",
-            "values": {
-              "0": "0 ?",
-              "1": "1 ?",
-              "2": "2 ?",
-              "3": "3 ?"
-            }
-          }
+          "data_type": "INT"
         }
       },
       "homeassistant": {
         "name": "Work Mode",
+        "type": "number",
+        "min": 0,
+        "max": 2,
+        "step": 1,
         "publish": true,
         "icon": "mdi:alert-circle"
       }
