@@ -979,22 +979,24 @@
       }
     },
     "priority_mode": {
-      "growatt": {
-        "position": {
-          "register_no": 8
+        "growatt": {
+            "position": {
+                "register_no": 8,
+                "offset": 0,
+                "size": 2
+            },
+            "data": {
+                "data_type": "INT"
+            }
         },
-        "data": {
-          "data_type": "INT"
+        "homeassistant": {
+            "publish": true,
+            "name": "Priority Mode",
+            "type": "number",
+            "min": 0,
+            "max": 2,
+            "step": 1
         }
-      },
-      "homeassistant": {
-        "publish": true,
-        "name": "Priority Mode",
-        "type": "number",
-        "min": 0,
-        "max": 2,
-        "step": 1
-      }
     },
   "input_registers": {
     "bat_2_soc_pct": {
