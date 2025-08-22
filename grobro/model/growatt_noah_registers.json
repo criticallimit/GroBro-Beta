@@ -981,7 +981,7 @@
     "priority_mode": {
       "growatt": {
         "position": {
-          "register_no": 8,
+          "register_no": 8
         },
         "data": {
           "data_type": "INT"
