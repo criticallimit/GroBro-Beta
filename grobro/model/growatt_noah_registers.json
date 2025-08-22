@@ -956,8 +956,7 @@
         "max": 100,
         "step": 1
       }
-    }
-  },
+    },
   "input_registers": {
     "bat_2_soc_pct": {
       "growatt": {
