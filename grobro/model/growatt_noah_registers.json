@@ -83,6 +83,27 @@
             "step": 1
         }
     },
+    "smart_power": {
+        "growatt": {
+            "position": {
+                "register_no": 311,
+                "offset": 0,
+                "size": 2
+            },
+            "data": {
+                "data_type": "INT"
+            }
+        },
+        "homeassistant": {
+            "publish": true,
+            "name": "Smart Power",
+            "unit_of_measurement": "W",
+            "type": "number",
+            "min": 0,
+            "max": 800,
+            "step": 1
+        }
+    },
     "slot1_enabled": {
         "growatt": {
             "position": {
@@ -966,7 +987,7 @@
           "size": 2
         },
         "data": {
-          "data_type": "FLOAT",
+          "data_type": "INT",
           "float_options": {
             "delta": 0.0,
             "multiplier": 1.0
@@ -989,7 +1010,7 @@
           "size": 2
         },
         "data": {
-          "data_type": "FLOAT",
+          "data_type": "INT",
           "float_options": {
             "delta": 0.0,
             "multiplier": 1.0
@@ -1012,7 +1033,7 @@
           "size": 2
         },
         "data": {
-          "data_type": "FLOAT",
+          "data_type": "INT",
           "float_options": {
             "delta": 0.0,
             "multiplier": 1.0
@@ -1025,6 +1046,34 @@
         "state_class": "measurement",
         "unit_of_measurement": "%",
         "icon": "mdi:percent"
+      }
+    },
+    "heater": {
+      "growatt": {
+        "position": {
+          "register_no": 17,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "ENUM",
+          "enum_options": {
+            "enum_type": "INT_MAP",
+            "values": {
+              "0": "Off",
+              "1": "1 On",
+              "2": "2 On",
+              "3": "1&2 On",
+              "4": "3 On",
+              "5": "1&3 On"
+            }
+          }
+        }
+      },
+      "homeassistant": {
+        "name": "Heater",
+        "publish": true,
+        "icon": "mdi:radiator"
       }
     },
     "priority_mode": {
@@ -1051,7 +1100,7 @@
         "publish": true,
         "icon": "mdi:alert-circle"
       }
-    },
+    },    
     "bat_sysstate": {
       "growatt": {
         "position": {
@@ -1085,7 +1134,7 @@
           "size": 2
         },
         "data": {
-          "data_type": "FLOAT",
+          "data_type": "INT",
           "float_options": {
             "delta": 0.0,
             "multiplier": 1.0
@@ -1196,10 +1245,10 @@
         "icon": "mdi:flash"
       }
     },
-    "temp2": {
+    "bat2_temp": {
       "growatt": {
         "position": {
-          "register_no": 97,
+          "register_no": 42,
           "offset": 0,
           "size": 2
         },
@@ -1212,7 +1261,7 @@
         }
       },
       "homeassistant": {
-        "name": "Temperature 2",
+        "name": "Bat2 Temp",
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
@@ -1364,7 +1413,7 @@
         "icon": "mdi:solar-power"
       }
     },
-    "ser_part_1": {
+    "bat1_ser_part_1": {
       "growatt": {
         "position": {
           "register_no": 21,
@@ -1376,7 +1425,58 @@
         }
       },
       "homeassistant": {
-        "name": "Serial Part 1",
+        "name": "Bat1 Serial Part 1",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat2_ser_part_1": {
+      "growatt": {
+        "position": {
+          "register_no": 33,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat2 Serial Part 1",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat3_ser_part_1": {
+      "growatt": {
+        "position": {
+          "register_no": 45,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat3 Serial Part 1",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat4_ser_part_1": {
+      "growatt": {
+        "position": {
+          "register_no": 57,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat4 Serial Part 1",
         "publish": true,
         "icon": "mdi:identifier"
       }
@@ -1429,7 +1529,7 @@
         "icon": "mdi:solar-power"
       }
     },
-    "ser_part_3": {
+    "bat1_ser_part_3": {
       "growatt": {
         "position": {
           "register_no": 25,
@@ -1441,12 +1541,63 @@
         }
       },
       "homeassistant": {
-        "name": "Serial Part 3",
+        "name": "Bat1 Serial Part 3",
         "publish": true,
         "icon": "mdi:identifier"
       }
     },
-    "ser_part_2": {
+    "bat2_ser_part_3": {
+      "growatt": {
+        "position": {
+          "register_no": 37,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat2 Serial Part 3",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat3_ser_part_3": {
+      "growatt": {
+        "position": {
+          "register_no": 49,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat3 Serial Part 3",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat4_ser_part_3": {
+      "growatt": {
+        "position": {
+          "register_no": 61,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat4 Serial Part 3",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat1_ser_part_2": {
       "growatt": {
         "position": {
           "register_no": 23,
@@ -1458,12 +1609,63 @@
         }
       },
       "homeassistant": {
-        "name": "Serial Part 2",
+        "name": "Bat1 Serial Part 2",
         "publish": true,
         "icon": "mdi:identifier"
       }
     },
-    "ser_part_4": {
+    "bat2_ser_part_2": {
+      "growatt": {
+        "position": {
+          "register_no": 35,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat2 Serial Part 2",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat3_ser_part_2": {
+      "growatt": {
+        "position": {
+          "register_no": 47,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat3 Serial Part 2",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat4_ser_part_2": {
+      "growatt": {
+        "position": {
+          "register_no": 59,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat4 Serial Part 2",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat1_ser_part_4": {
       "growatt": {
         "position": {
           "register_no": 27,
@@ -1475,7 +1677,58 @@
         }
       },
       "homeassistant": {
-        "name": "Serial Part 4",
+        "name": "Bat1 Serial Part 4",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat2_ser_part_4": {
+      "growatt": {
+        "position": {
+          "register_no": 39,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat2 Serial Part 4",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat3_ser_part_4": {
+      "growatt": {
+        "position": {
+          "register_no": 51,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat3 Serial Part 4",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },
+    "bat4_ser_part_4": {
+      "growatt": {
+        "position": {
+          "register_no": 63,
+          "offset": 0,
+          "size": 4
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat4 Serial Part 4",
         "publish": true,
         "icon": "mdi:identifier"
       }
@@ -1488,7 +1741,7 @@
           "size": 2
         },
         "data": {
-          "data_type": "FLOAT",
+          "data_type": "INT",
           "float_options": {
             "delta": 0.0,
             "multiplier": 1.0
@@ -1549,10 +1802,10 @@
         "icon": "mdi:percent"
       }
     },
-    "temp1": {
+    "bat1_temp": {
       "growatt": {
         "position": {
-          "register_no": 94,
+          "register_no": 30,
           "offset": 0,
           "size": 2
         },
@@ -1565,7 +1818,55 @@
         }
       },
       "homeassistant": {
-        "name": "Temperature 1",
+        "name": "Bat1 Temp",
+        "publish": true,
+        "state_class": "measurement",
+        "device_class": "temperature",
+        "unit_of_measurement": "°C",
+        "icon": "mdi:thermometer"
+      }
+    },
+"bat3_temp": {
+      "growatt": {
+        "position": {
+          "register_no": 54,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "FLOAT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 0.01
+          }
+        }
+      },
+      "homeassistant": {
+        "name": "Bat3 Temp",
+        "publish": true,
+        "state_class": "measurement",
+        "device_class": "temperature",
+        "unit_of_measurement": "°C",
+        "icon": "mdi:thermometer"
+      }
+    },
+"bat4_temp": {
+      "growatt": {
+        "position": {
+          "register_no": 66,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "FLOAT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 0.01
+          }
+        }
+      },
+      "homeassistant": {
+        "name": "Bat4 Temp",
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
