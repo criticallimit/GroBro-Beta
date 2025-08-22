@@ -1023,7 +1023,7 @@
         "icon": "mdi:percent"
       }
     },
-    "default_power_out": {
+    "anforderung": {
       "growatt": {
         "position": {
           "register_no": 252,
@@ -1037,7 +1037,7 @@
       },
       "homeassistant": {
         "publish": true,
-        "name": "Default Power Out",
+        "name": "Anforderung",
         "unit_of_measurement": "W"
       }
     },    
