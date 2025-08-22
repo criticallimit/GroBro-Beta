@@ -1070,6 +1070,10 @@
       },
       "homeassistant": {
         "name": "Priority Mode",
+        "type": "number",
+        "min": 0,
+        "max": 2,
+        "step": 1,
         "publish": true,
         "icon": "mdi:alert-circle"
       }
