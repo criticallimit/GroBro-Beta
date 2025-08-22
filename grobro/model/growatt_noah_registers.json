@@ -917,6 +917,7 @@
         "name": "Default Out Power",
         "unit_of_measurement": "W",
         "type": "number",
+        "mode": "slider",
         "min": 0,
         "max": 800,
         "step": 1
