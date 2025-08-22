@@ -919,6 +919,27 @@
         "step": 1
       }
     },
+    "work_mode": {
+      "growatt": {
+        "position": {
+          "register_no": 14,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "INT"
+        }
+      },
+      "homeassistant": {
+        "name": "Work Mode",
+        "type": "number",
+        "min": 0,
+        "max": 2,
+        "step": 1,
+        "publish": true,
+        "icon": "mdi:alert-circle"
+      }
+    },    
     "discharge_limit": {
       "growatt": {
         "position": {
@@ -1080,29 +1101,7 @@
         "publish": true,
         "icon": "mdi:alert-circle"
       }
-    },
-    "work_mode": {
-      "growatt": {
-        "position": {
-          "register_no": 14,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "INT"
-        }
-      },
-      "homeassistant": {
-        "name": "Work Mode",
-        "type": "number",
-        "min": 0,
-        "max": 2,
-        "step": 1,
-        "publish": true,
-        "icon": "mdi:alert-circle"
-      }
-    },
-    
+    },    
     "bat_sysstate": {
       "growatt": {
         "position": {
