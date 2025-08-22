@@ -967,7 +967,11 @@
           "size": 2
         },
         "data": {
-          "data_type": "INT"
+          "data_type": "INT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 1.0
+          }
         }
       },
       "homeassistant": {
@@ -985,8 +989,11 @@
           "offset": 0,
           "size": 2
         },
-        "data": {
-          "data_type": "INT"
+          "data_type": "INT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 1.0
+          }
         }
       },
       "homeassistant": {
@@ -1004,8 +1011,11 @@
           "offset": 0,
           "size": 2
         },
-        "data": {
-          "data_type": "INT"
+          "data_type": "INT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 1.0
+          }
         }
       },
       "homeassistant": {
@@ -1101,8 +1111,11 @@
           "offset": 0,
           "size": 2
         },
-        "data": {
-          "data_type": "INT"
+          "data_type": "INT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 1.0
+          }
         }
       },
       "homeassistant": {
@@ -1704,8 +1717,11 @@
           "offset": 0,
           "size": 2
         },
-        "data": {
-          "data_type": "INT"
+          "data_type": "INT",
+          "float_options": {
+            "delta": 0.0,
+            "multiplier": 1.0
+          }
         }
       },
       "homeassistant": {
