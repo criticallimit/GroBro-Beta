@@ -1,18 +1,14 @@
 ### WARNING: 
-This is for personal testing. 
+This is for personal testing.
 Changes are not documented and there may be temporary unexpected behavior of this Add-on
-
+----------------------------------------------------------------------------------------
 # 1.0.2
-
 + added Sensor for Device Serial Number
 + removed the 4 Parts for Bat1 Serial Number( these are now in one sensor see above)
 + small Code improvements
-## Neo
-+ reactivated Sensor: Inverter Run State
-
+----------------------------------------------------------------------------------------
 
 # 1.0.1
-
 ## Noah2000:
 + changed some useless FLOAT to INT
 + INT-MAP Registers now showing mapped Text
