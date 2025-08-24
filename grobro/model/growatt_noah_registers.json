@@ -57,10 +57,7 @@
             "publish": true,
             "name": "Slot 1 Mode",
             "type": "select",
-            "options": {
-              "0": "Load first",
-              "1": "Battery first",
-              "2": "Manuell"
+            "options": ["0", "1", "2"]
         }
     },
     "slot1_power": {
