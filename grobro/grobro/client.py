@@ -10,27 +10,26 @@ import logging
 import ssl
 from typing import Callable
 
-
 import paho.mqtt.client as mqtt
 from paho.mqtt.client import MQTTMessage
 
 from grobro import model
 from grobro.grobro import parser
-from dis import Positions
-from grobro.grobro.builder import append_crc
-from grobro.grobro.builder import scramble
+from grobro.grobro.builder import append_crc, scramble
 from grobro.model.modbus_function import GrowattModbusFunctionSingle
-from grobro.model.modbus_message import GrowattModbusFunction
-from grobro.model.modbus_message import GrowattModbusMessage
+from grobro.model.modbus_message import GrowattModbusFunction, GrowattModbusMessage
 from grobro.model.mqtt_config import MQTTConfig
-from grobro.model.growatt_registers import GrowattRegisterDataType
-from grobro.model.growatt_registers import GrowattRegisterDataTypes
-from grobro.model.growatt_registers import GrowattRegisterEnumTypes
-from grobro.model.growatt_registers import HomeAssistantHoldingRegisterInput
-from grobro.model.growatt_registers import HomeAssistantHoldingRegisterValue
-from grobro.model.growatt_registers import HomeAssistantInputRegister
-from grobro.model.growatt_registers import KNOWN_NEO_REGISTERS, KNOWN_NOAH_REGISTERS, KNOWN_NEXA_REGISTERS
-
+from grobro.model.growatt_registers import (
+    GrowattRegisterDataType,
+    GrowattRegisterDataTypes,
+    GrowattRegisterEnumTypes,
+    HomeAssistantHoldingRegisterInput,
+    HomeAssistantHoldingRegisterValue,
+    HomeAssistantInputRegister,
+    KNOWN_NEO_REGISTERS,
+    KNOWN_NOAH_REGISTERS,
+    KNOWN_NEXA_REGISTERS,
+)
 
 LOG = logging.getLogger(__name__)
 HA_BASE_TOPIC = os.getenv("HA_BASE_TOPIC", "homeassistant")
@@ -63,10 +62,28 @@ MQTT_PROP_DRY_RUN = mqtt.Properties(mqtt.PacketTypes.PUBLISH)
 MQTT_PROP_DRY_RUN.UserProperty = [("dry-run", "true")]
 
 
+def get_property(msg: MQTTMessage, name: str):
+    """Retrieve a user property from MQTT message if it exists."""
+    if msg.properties and msg.properties.UserProperty:
+        for key, value in msg.properties.UserProperty:
+            if key == name:
+                return value
+    return None
+
+
+def dump_message_binary(topic: str, payload: bytes):
+    """Dump raw MQTT payload to a binary file for debugging."""
+    os.makedirs(DUMP_DIR, exist_ok=True)
+    filename = os.path.join(DUMP_DIR, topic.replace("/", "_") + ".bin")
+    with open(filename, "ab") as f:
+        f.write(payload)
+        f.write(b"\n")
+
+
 class Client:
     on_config: Callable[[model.DeviceConfig], None]
-    on_input_register: Callable[HomeAssistantInputRegister, None]
-    on_holding_register_input: Callable[HomeAssistantHoldingRegisterInput, None]
+    on_input_register: Callable[[HomeAssistantInputRegister], None]
+    on_holding_register_input: Callable[[HomeAssistantHoldingRegisterInput], None]
 
     _client: mqtt.Client
     _forward_mqtt_config: model.MQTTConfig
@@ -120,8 +137,8 @@ class Client:
             LOG.warning("Sending failed: %s", result)
 
     def __on_connect(self, client, userdata, flags, reason_code, properties):
-      LOG.debug(f"Connected with result code {reason_code}")
-      self._client.subscribe("c/#")      
+        LOG.debug(f"Connected with result code {reason_code}")
+        self._client.subscribe("c/#")      
 
     def __on_message(self, client, userdata, msg: MQTTMessage):
         # check for forwarded messages and ignore them
@@ -163,10 +180,7 @@ class Client:
                     LOG.info("Modbus message from unknown device type: %s", device_id)
                     return
 
-                if (
-                    modbus_message.function
-                    == GrowattModbusFunction.READ_SINGLE_REGISTER
-                ):
+                if modbus_message.function == GrowattModbusFunction.READ_SINGLE_REGISTER:
                     state = HomeAssistantHoldingRegisterInput(device_id=device_id)
                     
                     for name, register in known_registers.holding_registers.items():
@@ -174,8 +188,8 @@ class Client:
                         value = register.growatt.data.parse(data_raw)
                         if value is None:
                             continue
-                        if register.homeassistant.type=="switch":
-                            value = "ON" if value==1 else "OFF"
+                        if register.homeassistant.type == "switch":
+                            value = "ON" if value == 1 else "OFF"
                         state.payload.append(
                             HomeAssistantHoldingRegisterValue(
                                 name=name,
@@ -190,11 +204,8 @@ class Client:
                     
                     for name, register in known_registers.input_registers.items():
                         data_raw = modbus_message.get_data(register.growatt.position)
-                        data_type = register.growatt.data
                         value = register.growatt.data.parse(data_raw)
-                        # TODO: this is a workaround for broken messages sent by neo inverters at night.
-                        # They emmit state updates with incredible high wattage, which spoils HA statistics.
-                        # Assuming no one runs a balkony plant with more than a million peak wattage, we drop such messages.
+                        # workaround for bad night-time messages
                         if name == "Ppv" and value > 1000000:
                             LOG.debug("Dropping bad payload: %s", device_id)
                             return
@@ -206,107 +217,23 @@ class Client:
 
             msg_type = struct.unpack_from(">H", unscrambled, 4)[0]
 
-            # NOAH: MSG-TYPE 37 is response when setting a register was succeful
-            # TODO impmlement a proper response handling
-            #example hex: 00 01 00 07 00 25 01 06 30 50 56 50 46 24 6a 52 32 31 42 54 30 30 32 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 fc 00 00 14 8c af
+            # TODO: implement proper response handling for NOAH message types
+        except Exception:
+            LOG.exception("Error handling message %s", msg.topic)
 
-            # NOAH: MSG-TYPE 831 looks like published Holding Register??
-            ## Example Hex: 00 01 00 07 03 3f 01 03 30 50 56 50 46 24 6a 52 32 31 42 54 30 30 32 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 30 50 56 50 46 24 6a 52 32 31 42 54 30 30 32 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 49 06 14 0f 20 01 03 00 00 00 7c 00 64 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 75 58 00 00 00 19 00 06 00 14 00 0f 00 20 00 01 00 00 00 00 00 00 00 00 00 00 00 31 50 42 46 55 00 00 00 00 00 00 32 31 32 30 31 33 32 31 31 30 31 30 32 31 33 30 30 36 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 7d 00 f9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 30 50 56 50 46 24 6a 52 32 31 42 54 30 30 32 52 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 fa 01 76 00 64 00 03 00 14 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 c8 00 00 00 00 00 00 00 00 00 c8 00 00 00 00 00 00 00 00 00 c8 00 00 00 00 00 00 00 00 00 c8 00 00 00 00 00 00 00 00 00 c8 00 00 00 00 00 00 00 00 00 c8 00 00 00 00 00 00 00 00 00 c8 00 00 03 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 5c 83
+    def __connect_to_growatt_server(self, device_id: str) -> mqtt.Client:
+        if device_id in self._forward_clients:
+            return self._forward_clients[device_id]
 
-            # NOAH=387 NEO=340,341
-            if msg_type in (387, 340, 341):
-                # Config message
-                config_offset = parser.find_config_offset(unscrambled)
-                config = parser.parse_config_type(unscrambled, config_offset)
-                self.on_config(config)
-                LOG.info(f"Received config message for {device_id}")
-                return
-
-            LOG.debug("Unknown msg_type %s: %s", msg_type, unscrambled.hex())
-        except Exception as e:
-            LOG.error(f"Processing message: {e}")
-
-    def __on_message_forward_client(self, client, userdata, msg: MQTTMessage):
-        if DUMP_MESSAGES:
-            dump_message_binary(msg.topic, msg.payload)
-        try:
-            device_id = msg.topic.split("/")[-1]
-            if not GROWATT_CLOUD_ENABLED:
-                return
-            if GROWATT_CLOUD != "true" and device_id not in GROWATT_CLOUD_FILTER:
-                LOG.debug(
-                    "Dropping Growatt message for device %s not in GROWATT_CLOUD filter",
-                    device_id,
-                )
-                return
-            LOG.debug("Forwarding message from Growatt for client %s", device_id)
-            # We need to publish the messages from Growatt on the Topic
-            # s/33/{deviceid}. Growatt sends them on Topic s/{deviceid}
-            self._client.publish(
-                msg.topic.split("/")[0] + "/33/" + device_id,
-                payload=msg.payload,
-                qos=msg.qos,
-                retain=msg.retain,
-                properties=MQTT_PROP_FORWARD_GROWATT,
+        client = mqtt.Client(client_id=f"grobro-forward-{device_id}")
+        if self._forward_mqtt_config.username and self._forward_mqtt_config.password:
+            client.username_pw_set(
+                self._forward_mqtt_config.username, self._forward_mqtt_config.password
             )
-        except Exception as e:
-            LOG.error(f"Forwarding message: {e}")
-
-    # Setup Growatt MQTT broker for forwarding messages
-    def __connect_to_growatt_server(self, client_id):
-        if f"forward_client_{client_id}" not in self._forward_clients:
-            LOG.info(
-                "Connecting to Growatt broker at '%s:%s', subscribed to '+/%s'",
-                self._forward_mqtt_config.host,
-                self._forward_mqtt_config.port,
-                client_id,
-            )
-            client = mqtt.Client(
-                client_id=client_id,
-                callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-            )
+        if self._forward_mqtt_config.use_tls:
             client.tls_set(cert_reqs=ssl.CERT_NONE)
             client.tls_insecure_set(True)
-            client.on_message = self.__on_message_forward_client
-            client.connect(
-                self._forward_mqtt_config.host,
-                self._forward_mqtt_config.port,
-                60,
-            )
-            client.subscribe(f"+/{client_id}")
-            client.loop_start()
-            self._forward_clients[f"forward_client_{client_id}"] = client
-        return self._forward_clients[f"forward_client_{client_id}"]
-
-
-# Ensure that the dump directory exists
-if DUMP_MESSAGES and not os.path.exists(DUMP_DIR):
-    os.makedirs(DUMP_DIR, exist_ok=True)
-    LOG.info(f"Dump directory created: {DUMP_DIR}")
-
-
-def dump_message_binary(topic, payload):
-    try:
-        # Build path following topic structure
-        topic_parts = topic.strip("/").split("/")
-        dir_path = os.path.join(DUMP_DIR, *topic_parts)
-        os.makedirs(dir_path, exist_ok=True)
-
-        # Write each message to a new file with timestamp
-        import time
-
-        timestamp = int(time.time() * 1000)
-        file_path = os.path.join(dir_path, f"{timestamp}.bin")
-
-        with open(file_path, "wb") as f:
-            f.write(payload)
-    except Exception as e:
-        LOG.error(f"Failed to dump message for topic {topic}: {e}")
-
-
-def get_property(msg, prop) -> str:
-    props = msg.properties.json().get("UserProperty", [])
-    for key, value in props:
-        if key == prop:
-            return value
-    return None
+        client.connect(self._forward_mqtt_config.host, self._forward_mqtt_config.port, 60)
+        client.loop_start()
+        self._forward_clients[device_id] = client
+        return client
