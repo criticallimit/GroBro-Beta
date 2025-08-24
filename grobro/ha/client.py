@@ -337,7 +337,7 @@ class Client:
         # Device Type Entity
         payload["cmps"][f"grobro_{device_id}_type"] = {
             "platform": "sensor",
-            "name": "**Device Type**",
+            "name": "Device Type",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/type",
             "unique_id": f"grobro_{device_id}_type",
             "object_id": f"{device_id}_type",
@@ -422,9 +422,9 @@ class Client:
         type_name = get_device_type_name(device_id)
 
         known_model_id = {
-            "55": "NEO-series",
-            "72": "NEXA-series",
-            "61": "NOAH-series",
+            "55": "NEO-Series",
+            "72": "NEXA-Series",
+            "61": "NOAH-Series",
         }.get(getattr(config, "device_type", None))
 
         if known_model_id:
