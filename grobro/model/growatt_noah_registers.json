@@ -21,27 +21,6 @@
             "icon": "mdi:clock-start"
         }
     },
-    "work_mode": {
-      "growatt": {
-        "position": {
-          "register_no": 8,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "INT"
-        }
-      },
-      "homeassistant": {
-        "name": "Work Mode",
-        "type": "number",
-        "min": 0,
-        "max": 1,
-        "step": 1,    
-        "publish": true,
-        "icon": "mdi:battery-sync"
-      }
-    },    
     "slot1_end_time": {
         "growatt": {
             "position": {
