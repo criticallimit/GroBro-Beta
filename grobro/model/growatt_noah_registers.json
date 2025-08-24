@@ -1641,7 +1641,7 @@
         "position": {
           "register_no": 11,
           "offset": 0,
-          "size": 6
+          "size": 10
         },
         "data": {
           "data_type": "STRING"
