@@ -916,10 +916,10 @@
         "publish": true,
         "name": "Default Out Power",
         "unit_of_measurement": "W",
-        "type": "range",
+        "type": "number",
         "min": 0,
         "max": 800,
-        "step": 10
+        "step": 1
       }
     },
     "discharge_limit": {
