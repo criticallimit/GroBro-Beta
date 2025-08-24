@@ -943,6 +943,25 @@
         "step": 1
       }
     },
+    "workmode": {
+      "growatt": {
+        "position": {
+          "register_no": 14,
+          "offset": 0,
+          "size": 2          
+        },
+        "data": {
+          "data_type": "INT"
+        }
+      },
+      "homeassistant": {
+        "publish": true,
+        "name": "Workmode",
+        "type": "number",
+        "min": 0,
+        "max": 1,
+        "step": 1
+      },    
     "charge_limit": {
       "growatt": {
         "position": {
