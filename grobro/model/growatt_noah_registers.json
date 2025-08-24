@@ -1226,7 +1226,7 @@
         "icon": "mdi:flash"
       }
     },
-    "bat2_temp2": {
+    "bat2_temp": {
       "growatt": {
         "position": {
           "register_no": 97,
