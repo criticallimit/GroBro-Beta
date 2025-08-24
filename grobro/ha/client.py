@@ -43,6 +43,17 @@ def get_known_registers(device_id: str) -> Optional[GroBroRegisters]:
     return None
 
 
+def get_device_type_name(device_id: str) -> str:
+    """Ermittle Klartext-Typname anhand der device_id."""
+    if device_id.startswith("QMN"):
+        return "NEO"
+    if device_id.startswith("0PVP"):
+        return "NOAH"
+    if device_id.startswith("0HVR"):
+        return "NEXA"
+    return "UNKNOWN"
+
+
 def map_enum_value(reg, value):
     """Wandelt ENUM-INT_MAP-Werte in Klartext um (falls vorhanden)."""
     try:
@@ -313,7 +324,7 @@ class Client:
                 "icon": state.homeassistant.icon,
             }
 
-        # NEW: Serial Number Entity (eigene Entity als Sensor)
+        # Serial Number Entity
         payload["cmps"][f"grobro_{device_id}_serial"] = {
             "platform": "sensor",
             "name": "Device SN",
@@ -323,14 +334,25 @@ class Client:
             "icon": "mdi:identifier",
         }
 
+        # Device Type Entity
+        payload["cmps"][f"grobro_{device_id}_type"] = {
+            "platform": "sensor",
+            "name": "Device Type",
+            "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/type",
+            "unique_id": f"grobro_{device_id}_type",
+            "object_id": f"{device_id}_type",
+            "icon": "mdi:chip",
+        }
+
         payload_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
         if self._discovery_payload_cache.get(device_id) == payload_str:
             LOG.debug("Discovery unchanged for %s, skipping", device_id)
             if device_id not in self._discovery_cache:
                 self._discovery_cache.append(device_id)
-            # trotzdem den Serial-State aktualisieren (kann nützlich sein)
+            # trotzdem States aktualisieren
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
+            self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
             return
 
         LOG.info("Publishing updated discovery for %s", device_id)
@@ -340,15 +362,11 @@ class Client:
         if device_id not in self._discovery_cache:
             self._discovery_cache.append(device_id)
 
-        # Serial-Entity gleich befüllen
-        self._client.publish(
-            f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
-            device_id,
-            retain=True,
-        )
+        # gleich befüllen
+        self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
+        self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
 
     def __migrate_entity_discovery(self, device_id: str, known_registers: GroBroRegisters):
-        # Migration alter Entitäten (wie in deiner Vorlage)
         old_entities = [("set_wirk", "number")]
         for e_name, e_type in old_entities:
             self._client.publish(
@@ -393,12 +411,15 @@ class Client:
             self._config_cache[device_id] = config
             LOG.info(f"Saved minimal config for new device: {config}")
 
+        # Device Info für HA
         device_info: dict = {
             "identifiers": [device_id],
             "name": f"Growatt {device_id}",
             "manufacturer": "Growatt",
             "serial_number": device_id,
         }
+
+        type_name = get_device_type_name(device_id)
 
         known_model_id = {
             "55": "NEO-series",
@@ -408,8 +429,11 @@ class Client:
 
         if known_model_id:
             device_info["model"] = known_model_id
-        elif getattr(config, "model_id", None):
-            device_info["model"] = config.model_id
+        else:
+            device_info["model"] = f"{type_name}-series"
+
+        if getattr(config, "model_id", None):
+            device_info["model"] += f" ({config.model_id})"
         if getattr(config, "sw_version", None):
             device_info["sw_version"] = config.sw_version
         if getattr(config, "hw_version", None):
