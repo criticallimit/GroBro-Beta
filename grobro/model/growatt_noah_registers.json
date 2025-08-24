@@ -1639,7 +1639,7 @@
     "firmware": {
       "growatt": {
         "position": {
-          "register_no": 216,
+          "register_no": 214,
           "offset": 0,
           "size": 4
         },
