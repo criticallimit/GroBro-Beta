@@ -42,7 +42,7 @@
             "icon": "mdi:clock-end"
         }
     },
-    "Noah_mode": {
+    "slot1_mode": {
         "growatt": {
             "position": {
                 "register_no": 256,
@@ -55,7 +55,7 @@
         },
         "homeassistant": {
             "publish": true,
-            "name": "Noah Mode",
+            "name": "Slot 1 Mode",
             "type": "number",
             "min": 0,
             "max": 1,
