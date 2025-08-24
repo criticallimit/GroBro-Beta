@@ -337,7 +337,7 @@ class Client:
         # Device Type Entity
         payload["cmps"][f"grobro_{device_id}_type"] = {
             "platform": "sensor",
-            "name": "Device Type",
+            "name": "**Device Type**",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/type",
             "unique_id": f"grobro_{device_id}_type",
             "object_id": f"{device_id}_type",
