@@ -1229,7 +1229,7 @@
     "bat2_temp": {
       "growatt": {
         "position": {
-          "register_no": 97,
+          "register_no": 42,
           "offset": 0,
           "size": 2
         },
@@ -1723,7 +1723,7 @@
     "bat1_temp": {
       "growatt": {
         "position": {
-          "register_no": 94,
+          "register_no": 30,
           "offset": 0,
           "size": 2
         },
