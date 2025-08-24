@@ -430,7 +430,7 @@ class Client:
         if known_model_id:
             device_info["model"] = known_model_id
         else:
-            device_info["model"] = f"{type_name}-series"
+            device_info["model"] = f"{type_name}-Series"
 
         if getattr(config, "model_id", None):
             device_info["model"] += f" ({config.model_id})"
