@@ -33,6 +33,7 @@
         }
       },
       "homeassistant": {
+        "type": "number",
         "name": "Work Mode",
         "publish": true,
         "icon": "mdi:battery-sync"
