@@ -1639,9 +1639,9 @@
     "firmware": {
       "growatt": {
         "position": {
-          "register_no": 11,
+          "register_no": 12,
           "offset": 0,
-          "size": 10
+          "size": 4
         },
         "data": {
           "data_type": "STRING"
