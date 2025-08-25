@@ -62,25 +62,6 @@
             "step": 1
         }
     },
-    "dynamic_power": {
-        "growatt": {
-        "position": {
-          "register_no": 311
-        },
-        "data": {
-          "data_type": "INT"
-        }
-      },
-      "homeassistant": {
-        "publish": true,
-        "name": "Dynamic Power",
-        "unit_of_measurement": "W",
-        "type": "number",
-        "min": 0,
-        "max": 800,
-        "step": 1
-      }
-    },    
     "slot1_power": {
         "growatt": {
             "position": {
@@ -985,6 +966,25 @@
     }
   },
   "input_registers": {
+    "dynamic_power": {
+        "growatt": {
+        "position": {
+          "register_no": 311
+        },
+        "data": {
+          "data_type": "INT"
+        }
+      },
+      "homeassistant": {
+        "publish": true,
+        "name": "Dynamic Power",
+        "unit_of_measurement": "W",
+        "type": "number",
+        "min": 0,
+        "max": 800,
+        "step": 1
+      }
+    },        
     "bat_2_soc_pct": {
       "growatt": {
         "position": {
