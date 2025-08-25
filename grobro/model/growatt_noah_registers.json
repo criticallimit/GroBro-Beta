@@ -1075,7 +1075,7 @@
             "values": {
               "0": "Load First",
               "1": "Battery First",
-              "2": "Grid First"
+              "2": "Smart Mode"
             }
           }
         }
