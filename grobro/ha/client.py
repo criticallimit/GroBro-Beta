@@ -30,8 +30,6 @@ MAX_SLOTS = int(os.getenv("MAX_SLOTS", "1"))
 LOG = logging.getLogger(__name__)
 
 
-# ------------------- Hilfsfunktionen -------------------
-
 def get_known_registers(device_id: str) -> Optional[GroBroRegisters]:
     """Ermittle passende Register-Sammlung anhand device_id-Präfix."""
     if device_id.startswith("QMN"):
@@ -79,7 +77,6 @@ def make_modbus_command(device_id: str, func: GrowattModbusFunction, register_no
     )
 
 
-# ------------------- Client-Klasse -------------------
 
 class Client:
     on_command: Optional[Callable[[GrowattModbusFunctionSingle], None]]
@@ -350,7 +347,7 @@ class Client:
             LOG.debug("Discovery unchanged for %s, skipping", device_id)
             if device_id not in self._discovery_cache:
                 self._discovery_cache.append(device_id)
-            # trotzdem States aktualisieren
+                
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
             return
@@ -362,7 +359,7 @@ class Client:
         if device_id not in self._discovery_cache:
             self._discovery_cache.append(device_id)
 
-        # gleich befüllen
+        
         self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
         self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
 
