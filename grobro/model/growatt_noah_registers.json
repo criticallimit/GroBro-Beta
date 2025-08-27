@@ -1399,7 +1399,7 @@
         "position": {
           "register_no": 33,
           "offset": 0,
-          "size": 4
+          "size": 16
         },
         "data": {
           "data_type": "STRING"
