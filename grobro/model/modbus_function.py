@@ -37,7 +37,7 @@ class GrowattModbusFunctionMultiple(BaseModel):
             constant_1,
             constant_7,
             msg_len,
-            constant_1_b,
+            constant_1,
             function,
             device_id_raw,
             start,
@@ -52,7 +52,7 @@ class GrowattModbusFunctionMultiple(BaseModel):
             function=function,
             start=start,
             end=end,
-            values=values,
+            value=value,
         )
 
     def build_grobro(self) -> bytes:
@@ -68,63 +68,6 @@ class GrowattModbusFunctionMultiple(BaseModel):
             self.end,
         )
         return header + self.values
-
-
-class GrowattModbusFunctionMultipleSerial(BaseModel):
-    """
-    Liest mehrere Register auf einmal (z. B. komplette Seriennummer).
-    Kombiniert die Werte als ASCII-String.
-    """
-
-    device_id: str
-    function: GrowattModbusFunction
-    start: int
-    end: int
-    value: str  # gesamter String, z.B. Seriennummer
-
-    @staticmethod
-    def parse_grobro(buffer) -> Optional["GrowattModbusFunctionMultipleSerial"]:
-        # Header auspacken (wie bisher)
-        (
-            constant_1,
-            constant_7,
-            msg_len,
-            constant_1_b,
-            function,
-            device_id_raw,
-            start,
-            end,
-        ) = struct.unpack(">HHHBB30sHH", buffer[0:42])
-
-        device_id = device_id_raw.decode("ascii", errors="ignore").strip("\x00")
-        values_raw = buffer[42:]
-
-        # Alle Werte als ASCII-String zusammenfassen
-        value = values_raw.decode("ascii", errors="ignore").strip("\x00")
-
-        return GrowattModbusFunctionMultipleSerial(
-            device_id=device_id,
-            function=function,
-            start=start,
-            end=end,
-            value=value,
-        )
-
-    def build_grobro(self) -> bytes:
-        # Header + Werte zusammenpacken
-        values_bytes = self.value.encode("ascii").ljust((self.end - self.start + 1) * 2, b"\x00")
-        header = struct.pack(
-            ">HHHBB30sHH",
-            1,
-            7,
-            36 + len(values_bytes),
-            1,
-            self.function,
-            self.device_id.encode("ascii").ljust(30, b"\x00"),
-            self.start,
-            self.end,
-        )
-        return header + values_bytes
 
 
 class GrowattModbusFunctionSingle(BaseModel):
@@ -149,12 +92,12 @@ class GrowattModbusFunctionSingle(BaseModel):
     value: int
 
     @staticmethod
-    def parse_grobro(buffer) -> Optional["GrowattModbusFunctionSingle"]:
+    def parse_grobro(buffer) -> Optional["GrowattModbusMessage"]:
         (
             constant_1,
             constant_7,
             msg_len,
-            constant_1_b,
+            constant_1,
             function,
             device_id_raw,
             register,
