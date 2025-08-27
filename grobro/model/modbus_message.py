@@ -1,3 +1,4 @@
+from rope.base import serializer
 from typing import Optional
 from datetime import datetime
 import struct
@@ -19,13 +20,23 @@ class GrowattModbusBlock(BaseModel):
     @staticmethod
     def parse_grobro(buffer) -> Optional["GrowattModbusBlock"]:
         try:
+            if len(buffer) < 4:
+                return None
             start, end = struct.unpack(">HH", buffer[0:4])
             num_blocks = end - start + 1
-            values = buffer[4 : 4 + num_blocks * 2]
-            assert len(values) == num_blocks * 2
+            needed_len = 4 + num_blocks * 2
+            if len(buffer) < needed_len:
+                LOG.warning(
+                    "Not enough bytes for GrowattModbusBlock: needed %s, got %s",
+                    needed_len,
+                    len(buffer),
+                )
+                return None
+            values = buffer[4:needed_len]
             return GrowattModbusBlock(start=start, end=end, values=values)
         except Exception as e:
             LOG.warning("Parsing GrowattModbusBlock failed: %s", e)
+            return None
 
     def build_grobro(self) -> bytes:
         return struct.pack(">HH", self.start, self.end) + self.values
@@ -51,19 +62,18 @@ class GrowattMetadata(BaseModel):
 
     @staticmethod
     def parse_grobro(buffer) -> Optional["GrowattMetadata"]:
-        offset = 0
-        device_serial_raw = struct.unpack(">30s", buffer[offset : offset + 30])[0]
+        if len(buffer) < 37:
+            return None
+        device_serial_raw = struct.unpack(">30s", buffer[0:30])[0]
         device_serial = device_serial_raw.decode("ascii", errors="ignore").strip("\x00")
-        offset += 30
+        year, month, day, hour, minute, second, millis = struct.unpack(">7B", buffer[30:37])
+        timestamp = None
         try:
-            year, month, day, hour, minute, second, millis = struct.unpack(
-                ">7B", buffer[offset : offset + 7]
-            )
             timestamp = datetime(
                 year + 2000, month, day, hour, minute, second, microsecond=millis * 1000
             )
         except Exception:
-            timestamp = None
+            pass
         return GrowattMetadata(device_sn=device_serial, timestamp=timestamp)
 
     def build_grobro(self) -> bytes:
@@ -89,7 +99,7 @@ class GrowattModbusMessage(BaseModel):
 
     @property
     def msg_len(self):
-        result = 32  # 2 byte unknown + 30 byte device id
+        result = 32  # 2 byte unknown + 30 byte device_id
         if self.metadata:
             result += self.metadata.size()
         for block in self.register_blocks:
@@ -107,12 +117,14 @@ class GrowattModbusMessage(BaseModel):
     @staticmethod
     def parse_grobro(buffer) -> Optional["GrowattModbusMessage"]:
         try:
+            if len(buffer) < 38:
+                return None
             unknown, constant_7, msg_len, constant_1, function, device_id_raw = struct.unpack(
                 HEADER_STRUCT, buffer[0:38]
             )
 
             if msg_len != len(buffer[8:]):
-                LOG.warning("Message length mismatch: expected %s, got %s", msg_len, len(buffer[8:]))
+                LOG.warning("Message length mismatch: header=%s, actual=%s", msg_len, len(buffer[8:]))
                 return None
 
             device_id = device_id_raw.decode("ascii", errors="ignore").strip("\x00")
@@ -121,16 +133,15 @@ class GrowattModbusMessage(BaseModel):
                 LOG.info("Unknown modbus function for %s: %s", device_id, function)
                 return None
 
-            offset = 38
-            metadata = None
             register_blocks = []
+            offset = 38
 
-            # READ_INPUT_REGISTER enthält Metadaten
+            metadata = None
             if function == GrowattModbusFunction.READ_INPUT_REGISTER:
                 metadata = GrowattMetadata.parse_grobro(buffer[offset:])
-                offset += metadata.size()
+                if metadata:
+                    offset += metadata.size()
 
-            # PRESET_MULTIPLE_REGISTER oder normale Registerblöcke verarbeiten
             while offset + 4 <= len(buffer):
                 block = GrowattModbusBlock.parse_grobro(buffer[offset:])
                 if block is None:
@@ -140,13 +151,14 @@ class GrowattModbusMessage(BaseModel):
 
             return GrowattModbusMessage(
                 unknown=unknown,
-                device_id=device_id,
-                function=GrowattModbusFunction(function),
                 metadata=metadata,
+                device_id=device_id,
+                function=function,
                 register_blocks=register_blocks,
             )
         except Exception as e:
             LOG.warning("Parsing GrowattModbusMessage failed: %s", e)
+            return None
 
     def build_grobro(self) -> bytes:
         result = struct.pack(
@@ -163,3 +175,4 @@ class GrowattModbusMessage(BaseModel):
         for block in self.register_blocks:
             result += block.build_grobro()
         return result
+
