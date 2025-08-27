@@ -153,7 +153,7 @@ class GrowattModbusMessage(BaseModel):
                     buffer[0:38],
                 )
             )
-            if msg_len != len(buffer[16:]):
+            if msg_len != len(buffer[8:]):
                 return None
             device_id = device_id_raw.decode("ascii", errors="ignore").strip("\x00")
             if function not in [e.value for e in GrowattModbusFunction]:
