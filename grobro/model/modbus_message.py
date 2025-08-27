@@ -144,19 +144,6 @@ class GrowattModbusMessage(BaseModel):
             return block.values[block_pos : block_pos + pos.size]
         return None
 
-    def get_bat2_serial(self) -> Optional[str]:
-        """Liest die Bat2-Seriennummer aus den Registern 33–36 (4 Register à 2 Bytes)"""
-        serial_bytes = bytearray()
-        for reg_no in range(33, 37):  # 33, 34, 35, 36
-            for block in self.register_blocks:
-                if block.start <= reg_no <= block.end:
-                    offset_in_block = (reg_no - block.start) * 2
-                    serial_bytes.extend(block.values[offset_in_block:offset_in_block + 2])
-                    break
-        if serial_bytes:
-            return serial_bytes.decode("ascii", errors="ignore").strip("\x00")
-        return None
-
     @staticmethod
     def parse_grobro(buffer) -> Optional["GrowattModbusMessage"]:
         try:
