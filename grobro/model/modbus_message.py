@@ -14,17 +14,6 @@ HEADER_STRUCT = ">HHHBB30s"
 
 
 class GrowattModbusBlock(BaseModel):
-    """
-    Represents a block of modbus registers.
-    start, end are the number of the first and last register included.
-    values are the registers between start and end, each value 2 bytes.
-
-    Each register block:
-        - H - 2 byte start register
-        - H - 2 byte end register (M=end-start+1)
-        - M x H - M x 2 byte register values
-    """
-
     start: int
     end: int
     values: bytes
@@ -43,8 +32,7 @@ class GrowattModbusBlock(BaseModel):
             LOG.warn("Parsing GrowattModbusBlock: %s", e)
 
     def build_grobro(self) -> bytes:
-        result = struct.pack(">HH", self.start, self.end) + self.values
-        return result
+        return struct.pack(">HH", self.start, self.end) + self.values
 
     def size(self):
         return 4 + len(self.values)
@@ -59,14 +47,6 @@ class GrowattModbusFunction(int, Enum):
 
 
 class GrowattMetadata(BaseModel):
-    """
-    Represents metadata within a READ_INPUT_REGISTER message.
-
-    Structure:
-    - 30s - zero padded device serial
-    - 7B - timestamp in interesting format
-    """
-
     device_sn: str
     timestamp: Optional[datetime]
 
@@ -92,9 +72,9 @@ class GrowattMetadata(BaseModel):
         return GrowattMetadata(device_sn=device_serial, timestamp=timestamp)
 
     def build_grobro(self) -> bytes:
-        result = struct.pack(
+        return struct.pack(
             ">30s7B",
-            self.device_sn.encode("ascii").ljust(30, b"\x00"),  # device_id
+            self.device_sn.encode("ascii").ljust(30, b"\x00"),
             self.timestamp.year - 2000,
             self.timestamp.month,
             self.timestamp.day,
@@ -103,24 +83,9 @@ class GrowattMetadata(BaseModel):
             self.timestamp.second,
             int(self.timestamp.microsecond / 1000),
         )
-        return result
 
 
 class GrowattModbusMessage(BaseModel):
-    """
-    Represents a block of modbus registers sent by the growatt device.
-
-    Header Structure:
-        - H - 2 byte unknown
-        - H - 2 byte constant 7
-        - H - 2 byte message length (excluding register count, constant and message length)
-        - B - 1 byte modbus device address (seems to be constant 1 in mqtt)
-        - B - 1 byte function
-        - 30s - 30 byte zero-padded device id
-        - optional GrowattModbusMetadata - only present when function == READ_INPUT_REGISTER
-        - N register blocks
-    """
-
     unknown: int
     device_id: str
     metadata: Optional[GrowattMetadata] = None
@@ -129,7 +94,7 @@ class GrowattModbusMessage(BaseModel):
 
     @property
     def msg_len(self):
-        result = 32  # 2 byte msg_type + 30 byte device id
+        result = 32
         if self.metadata:
             result += self.metadata.size()
         for block in self.register_blocks:
@@ -144,14 +109,20 @@ class GrowattModbusMessage(BaseModel):
             return block.values[block_pos : block_pos + pos.size]
         return None
 
+    def get_bat2_serial(self) -> Optional[str]:
+        """Liest die Bat2-Seriennummer aus den Registern 33–36 (4 Register à 2 Bytes)"""
+        bat2_pos = GrowattRegisterPosition(register_no=33, offset=0, size=8)
+        raw_bytes = self.get_data(bat2_pos)
+        if raw_bytes:
+            return raw_bytes.decode("ascii", errors="ignore").strip("\x00")
+        return None
+
     @staticmethod
     def parse_grobro(buffer) -> Optional["GrowattModbusMessage"]:
         try:
-            (unknown, constant_7, msg_len, constant_1, function, device_id_raw) = (
-                struct.unpack(
-                    HEADER_STRUCT,
-                    buffer[0:38],
-                )
+            (unknown, constant_7, msg_len, constant_1, function, device_id_raw) = struct.unpack(
+                HEADER_STRUCT,
+                buffer[0:38],
             )
             if msg_len != len(buffer[8:]):
                 return None
@@ -162,7 +133,6 @@ class GrowattModbusMessage(BaseModel):
 
             register_blocks = []
             offset = 38
-
             metadata = None
             if function == GrowattModbusFunction.READ_INPUT_REGISTER:
                 metadata = GrowattMetadata.parse_grobro(buffer[offset:])
@@ -191,7 +161,7 @@ class GrowattModbusMessage(BaseModel):
             self.msg_len,
             1,
             self.function,
-            self.device_id.encode("ascii").ljust(30, b"\x00"),  # device_id
+            self.device_id.encode("ascii").ljust(30, b"\x00"),
         )
         if self.metadata:
             result += self.metadata.build_grobro()
