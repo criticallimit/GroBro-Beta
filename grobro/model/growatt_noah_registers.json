@@ -21,24 +21,6 @@
             "icon": "mdi:clock-start"
         }
     },
-    "firmware": {
-        "growatt": {
-          "position": {
-              "register_no": 9,
-              "offset": 0,
-              "size": 4
-          },
-          "data": {
-              "data_type": "STRING"
-          }
-      },
-      "homeassistant": {
-          "publish": true,
-          "name": "Firmware Version",
-          "type": "string",
-          "icon": "mdi:chip"
-      }
-    },    
     "slot1_end_time": {
         "growatt": {
             "position": {
