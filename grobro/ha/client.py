@@ -415,7 +415,7 @@ class Client:
             "identifiers": [device_id],
             "name": f"Growatt {device_id}",
             "manufacturer": "Growatt",
-            "serial_number": device_id,
+            "serial_number": serial_number,
         }
 
         type_name = get_device_type_name(device_id)
