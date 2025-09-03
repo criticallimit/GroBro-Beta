@@ -416,7 +416,6 @@ class Client:
             "name": f"Growatt {device_id}",
             "manufacturer": "Growatt",
             "serial_number": device_id,
-            "firmware": software_version,
         }
 
         type_name = get_device_type_name(device_id)
