@@ -29,7 +29,7 @@
                 "size": 2
             },
             "data": {
-                "data_type": "TIME_HHMM"
+                "data_": "TIME_HHMM"
             }
         },
         "homeassistant": {
