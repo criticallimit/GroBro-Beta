@@ -42,9 +42,9 @@ class DeviceConfig(BaseModel):
     raw: Optional[str] = None
 
     @property
-    def device_id(self) -> str:
+    def serial_number(self) -> str:
         return self.serial_number or "unknown"
-    @property
+
     def software_version(self) -> str:
         return self.sw_version or "unknown"
     
