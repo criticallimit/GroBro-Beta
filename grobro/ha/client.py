@@ -21,7 +21,7 @@ from grobro.model.growatt_registers import (
 from grobro.model.modbus_message import GrowattModbusFunction
 from grobro.model.modbus_function import (
     GrowattModbusFunctionSingle,
-    GrowattModbusFunctionMultiple,  # potentially used later
+    GrowattModbusFunctionMultiple,
 )
 
 HA_BASE_TOPIC = os.getenv("HA_BASE_TOPIC", "homeassistant")
@@ -30,8 +30,10 @@ MAX_SLOTS = int(os.getenv("MAX_SLOTS", "1"))
 LOG = logging.getLogger(__name__)
 
 
+# ------------------- Helpfunctions -------------------
+
 def get_known_registers(device_id: str) -> Optional[GroBroRegisters]:
-    """Return the matching register set based on the device_id prefix."""
+    """Ermittle passende Register-Sammlung anhand device_id-Präfix."""
     if device_id.startswith("QMN"):
         return KNOWN_NEO_REGISTERS
     if device_id.startswith("0PVP"):
@@ -42,7 +44,7 @@ def get_known_registers(device_id: str) -> Optional[GroBroRegisters]:
 
 
 def get_device_type_name(device_id: str) -> str:
-    """Return a human-readable type name based on the device_id."""
+    """Ermittle Klartext-Typname anhand der device_id."""
     if device_id.startswith("QMN"):
         return "NEO"
     if device_id.startswith("0PVP"):
@@ -53,7 +55,7 @@ def get_device_type_name(device_id: str) -> str:
 
 
 def map_enum_value(reg, value):
-    """Map ENUM INT_MAP values to their text label if available."""
+    """Wandelt ENUM-INT_MAP-Werte in Klartext um (falls vorhanden)."""
     try:
         data = getattr(reg.growatt, "data", None)
         if not data or getattr(data, "data_type", None) != "ENUM":
@@ -67,13 +69,8 @@ def map_enum_value(reg, value):
         return value
 
 
-def make_modbus_command(
-    device_id: str,
-    func: GrowattModbusFunction,
-    register_no: int,
-    value: Optional[int] = None,
-) -> GrowattModbusFunctionSingle:
-    """Create a GrowattModbusFunctionSingle command."""
+def make_modbus_command(device_id: str, func: GrowattModbusFunction, register_no: int, value: Optional[int] = None) -> GrowattModbusFunctionSingle:
+    """Erzeugt einen GrowattModbusFunctionSingle-Befehl."""
     return GrowattModbusFunctionSingle(
         device_id=device_id,
         function=func,
@@ -81,6 +78,8 @@ def make_modbus_command(
         value=value if value is not None else register_no,
     )
 
+
+# ------------------- Client-Class -------------------
 
 class Client:
     on_command: Optional[Callable[[GrowattModbusFunctionSingle], None]]
@@ -101,14 +100,14 @@ class Client:
             self._client.tls_insecure_set(True)
         self._client.connect(mqtt_config.host, mqtt_config.port, 60)
 
-        # Subscriptions for incoming commands from Home Assistant
+        # Subscriptions
         for cmd_type in ["number", "button", "switch"]:
             for action in ["set", "read"]:
                 topic = f"{HA_BASE_TOPIC}/{cmd_type}/grobro/+/+/{action}"
                 self._client.subscribe(topic)
         self._client.on_message = self.__on_message
 
-        # Load cached device configs from files in the current directory
+        # Configs laden (Cache aus Dateien)
         for fname in os.listdir("."):
             if fname.startswith("config_") and fname.endswith(".json"):
                 config = model.DeviceConfig.from_file(fname)
@@ -120,46 +119,15 @@ class Client:
     # ------------------- Lifecycle -------------------
 
     def start(self):
-        """Start the MQTT network loop."""
         self._client.loop_start()
 
     def stop(self):
-        """Stop the MQTT network loop and disconnect."""
         self._client.loop_stop()
         self._client.disconnect()
-
-    # ------------------- Extra Utilities -------------------
-
-    def get_known_devices(self) -> list[str]:
-        """Return all known device IDs currently in the config cache."""
-        return list(self._config_cache.keys())
-
-    def remove_device(self, device_id: str):
-        """Remove a device from caches and timers, and mark it as unavailable in HA."""
-        if device_id in self._config_cache:
-            del self._config_cache[device_id]
-        if device_id in self._discovery_payload_cache:
-            del self._discovery_payload_cache[device_id]
-        if device_id in self._discovery_cache:
-            self._discovery_cache.remove(device_id)
-        if device_id in self._device_timers:
-            self._device_timers[device_id].cancel()
-            del self._device_timers[device_id]
-
-        # Mark device as offline in HA
-        self.__publish_availability(device_id, False)
-        LOG.info("Device %s removed from cache and marked unavailable.", device_id)
-
-    def republish_device(self, device_id: str):
-        """Force re-publishing discovery and availability for a device."""
-        LOG.info("Forcing republish for device %s", device_id)
-        self.__publish_device_discovery(device_id)
-        self.__publish_availability(device_id, True)
 
     # ------------------- Config Handling -------------------
 
     def set_config(self, config: model.DeviceConfig):
-        """Store device config, persist it if changed, and (re)publish discovery."""
         device_id = config.serial_number
         config_path = f"config_{config.device_id}.json"
         existing_config = model.DeviceConfig.from_file(config_path)
@@ -178,13 +146,13 @@ class Client:
 
     def publish_input_register(self, state: HomeAssistantInputRegister):
         LOG.debug("HA: publish: %s", state)
-        # Ensure discovery + availability before state
+        # discovery + availability
         self.__publish_device_discovery(state.device_id)
         self.__publish_availability(state.device_id, True)
         if DEVICE_TIMEOUT > 0:
             self.__reset_device_timer(state.device_id)
 
-        # ENUM mapping on payload values
+        # ENUM Mapping
         payload = dict(state.payload)
         known_registers = get_known_registers(state.device_id)
         if known_registers:
@@ -193,12 +161,11 @@ class Client:
                 if reg:
                     payload[key] = map_enum_value(reg, value)
 
-        # Publish state payload
+        # State publish
         topic = f"{HA_BASE_TOPIC}/grobro/{state.device_id}/state"
         self._client.publish(topic, json.dumps(payload, separators=(",", ":")), retain=False)
 
     def publish_holding_register_input(self, ha_input: HomeAssistantHoldingRegisterInput):
-        """Publish values for HA command components (GET/state topics)."""
         try:
             LOG.debug("HA: publish: %s", ha_input)
             for value in ha_input.payload:
@@ -222,7 +189,7 @@ class Client:
             LOG.info("Unknown device type: %s", device_id)
             return
 
-        # Button handling
+        # Buttons
         if cmd_type == "button":
             if cmd_name == "read_all":
                 for name, register in known_registers.holding_registers.items():
@@ -245,7 +212,7 @@ class Client:
                 ))
                 return
 
-        # Number / Switch handling
+        # Number / Switch
         if cmd_type in {"number", "switch"} and action == "set":
             raw_value = msg.payload.decode()
             if cmd_type == "switch":
@@ -272,7 +239,6 @@ class Client:
     # ------------------- Internals -------------------
 
     def __reset_device_timer(self, device_id: str):
-        """Reset or create a timeout timer that marks the device unavailable on expiry."""
         def set_device_unavailable(d_id: str):
             LOG.warning("Device %s timed out. Mark it as unavailable.", d_id)
             self.__publish_availability(d_id, False)
@@ -285,7 +251,6 @@ class Client:
         timer.start()
 
     def __publish_availability(self, device_id: str, online: bool):
-        """Publish availability (online/offline) for a device."""
         LOG.debug("Set device %s availability: %s", device_id, online)
         self._client.publish(
             f"{HA_BASE_TOPIC}/grobro/{device_id}/availability",
@@ -294,7 +259,6 @@ class Client:
         )
 
     def __publish_device_discovery(self, device_id: str):
-        """Publish Home Assistant discovery payload for a device (idempotent)."""
         known_registers = get_known_registers(device_id)
         if not known_registers:
             LOG.info("Unable to publish unknown device type: %s", device_id)
@@ -304,7 +268,7 @@ class Client:
 
         topic = f"{HA_BASE_TOPIC}/device/{device_id}/config"
 
-        # Prepare discovery payload
+        # prepare discovery payload
         payload: dict = {
             "dev": self.__device_info_from_config(device_id),
             "avty_t": f"{HA_BASE_TOPIC}/grobro/{device_id}/availability",
@@ -312,7 +276,7 @@ class Client:
             "cmps": {},
         }
 
-        # Commands (numbers/switches/buttons)
+        # Commands
         for cmd_name, cmd in known_registers.holding_registers.items():
             if not cmd.homeassistant.publish:
                 continue
@@ -334,7 +298,7 @@ class Client:
                 **cmd.homeassistant.dict(exclude_none=True),
             }
 
-        # "Read All" button
+        # Read-All Button
         payload["cmps"][f"grobro_{device_id}_cmd_read_all"] = {
             "command_topic": f"{HA_BASE_TOPIC}/button/grobro/{device_id}/read_all/read",
             "platform": "button",
@@ -342,7 +306,7 @@ class Client:
             "name": "Read All Values",
         }
 
-        # States (sensors)
+        # States
         for state_name, state in known_registers.input_registers.items():
             if not state.homeassistant.publish:
                 continue
@@ -360,7 +324,7 @@ class Client:
                 "icon": state.homeassistant.icon,
             }
 
-        # Serial Number entity
+        # Serial Number Entity
         payload["cmps"][f"grobro_{device_id}_serial"] = {
             "platform": "sensor",
             "name": "Device SN",
@@ -369,18 +333,8 @@ class Client:
             "object_id": f"{device_id}_serial",
             "icon": "mdi:identifier",
         }
-        # Software Version entity
-        # <-- HIER WIRD DIE SW_VERSION HINZUGEFÜGT
-        sw_version = getattr(self._config_cache.get(device_id), "sw_version", "unknown")
-        payload["cmps"][f"grobro_{device_id}_sw_version"] = {
-            "platform": "sensor",
-            "name": "Software Version",
-            "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/state",
-            "value_template": f"{{{{ value_json['sw_version'] | default('{sw_version}') }}}}",
-            "unique_id": f"grobro_{device_id}_sw_version",
-            "object_id": f"{device_id}_sw_version",
-        }
-        # Device Type entity
+
+        # Device Type Entity
         payload["cmps"][f"grobro_{device_id}_type"] = {
             "platform": "sensor",
             "name": "Device Type",
@@ -396,8 +350,7 @@ class Client:
             LOG.debug("Discovery unchanged for %s, skipping", device_id)
             if device_id not in self._discovery_cache:
                 self._discovery_cache.append(device_id)
-
-            # Keep these retained topics up to date
+            # trotzdem States aktualisieren
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
             return
@@ -409,12 +362,10 @@ class Client:
         if device_id not in self._discovery_cache:
             self._discovery_cache.append(device_id)
 
-        # Also (re)publish retained serial/type
         self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
         self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
 
     def __migrate_entity_discovery(self, device_id: str, known_registers: GroBroRegisters):
-        """Publish migration markers on old discovery topics to help HA clean up."""
         old_entities = [("set_wirk", "number")]
         for e_name, e_type in old_entities:
             self._client.publish(
@@ -442,7 +393,6 @@ class Client:
             )
 
     def __device_info_from_config(self, device_id: str):
-        """Build Home Assistant device info based on cached or on-disk config."""
         # Find matching config
         config = self._config_cache.get(device_id)
         config_path = f"config_{device_id}.json"
@@ -460,7 +410,7 @@ class Client:
             self._config_cache[device_id] = config
             LOG.info(f"Saved minimal config for new device: {config}")
 
-        # Device info for HA
+        # Device Info for HA
         device_info: dict = {
             "identifiers": [device_id],
             "name": f"Growatt {device_id}",
