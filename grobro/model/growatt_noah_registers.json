@@ -935,8 +935,9 @@
         }
       },
       "homeassistant": {
+        "name": "Firmware",
         "publish": true,
-        "name": "Firmware"
+        "icon": "mdi:identifier"
       }
     },   
     "discharge_limit": {
