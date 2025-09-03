@@ -369,7 +369,17 @@ class Client:
             "object_id": f"{device_id}_serial",
             "icon": "mdi:identifier",
         }
-
+        # Software Version entity
+        # <-- HIER WIRD DIE SW_VERSION HINZUGEFÜGT
+        sw_version = getattr(self._config_cache.get(device_id), "sw_version", "unknown")
+        payload["cmps"][f"grobro_{device_id}_sw_version"] = {
+            "platform": "sensor",
+            "name": "Software Version",
+            "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/state",
+            "value_template": f"{{{{ value_json['sw_version'] | default('{sw_version}') }}}}",
+            "unique_id": f"grobro_{device_id}_sw_version",
+            "object_id": f"{device_id}_sw_version",
+        }
         # Device Type entity
         payload["cmps"][f"grobro_{device_id}_type"] = {
             "platform": "sensor",
