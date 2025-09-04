@@ -45,13 +45,14 @@ class DeviceConfig(BaseModel):
     def device_id(self) -> str:
         return self.serial_number
     
-    def sw_version(self) -> str:
-        return self.sw_version        
-    
     def to_file(self, file_path: str) -> str:
         with open(file_path, "w") as f:
             f.write(self.model_dump_json(exclude_none=True))
 
+    @property
+    def sw_version(self) -> str:
+        return self.sw_version        
+    
     @staticmethod
     def from_file(file_path: str) -> Optional["DeviceConfig"]:
         if not os.path.exists(file_path):
