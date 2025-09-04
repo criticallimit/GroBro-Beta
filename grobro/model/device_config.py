@@ -50,7 +50,7 @@ class DeviceConfig(BaseModel):
             f.write(self.model_dump_json(exclude_none=True))
 
     @property
-    def sw_version(self) -> str:
+    def firmware(self) -> str:
         return self.sw_version        
     
     @staticmethod
