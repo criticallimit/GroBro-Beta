@@ -21,6 +21,23 @@
             "icon": "mdi:clock-start"
         }
     },
+    "local_ip": {
+      "growatt": {
+        "position": {
+          "register_no": 14,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "STRING"
+        }
+      },
+      "homeassistant": {
+        "name": "Local-IP",
+        "publish": true,
+        "icon": "mdi:identifier"
+      }
+    },        
     "slot1_end_time": {
         "growatt": {
             "position": {
@@ -1411,23 +1428,6 @@
         "icon": "mdi:identifier"
       }
     },
-    "local_ip": {
-      "growatt": {
-        "position": {
-          "register_no": 14,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Local-IP",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },    
     "bat3_ser_part_1": {
       "growatt": {
         "position": {
