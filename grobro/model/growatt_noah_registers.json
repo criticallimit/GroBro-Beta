@@ -21,24 +21,6 @@
             "icon": "mdi:clock-start"
         }
     },
-    "local_ip": {
-      "growatt": {
-        "position": {
-          "register_no": 14,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Local-IP",
-        "type": "STRING"
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },        
     "slot1_end_time": {
         "growatt": {
             "position": {
