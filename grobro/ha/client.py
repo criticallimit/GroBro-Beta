@@ -344,15 +344,6 @@ class Client:
             "icon": "mdi:chip",
         }
 
-        # Firmware Entity
-        payload["cmps"][f"grobro_{device_id}_firmware"] = {
-            "platform": "sensor",
-            "name": "Device Type",
-            "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/firmware",
-            "unique_id": f"grobro_{device_id}_firmware",
-            "object_id": f"{device_id}_firmware",
-            "icon": "mdi:chip",
-        }        
         payload_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
 
         if self._discovery_payload_cache.get(device_id) == payload_str:
@@ -362,7 +353,6 @@ class Client:
             # trotzdem States aktualisieren
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
             self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
-            self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/firmware", firmware, retain=True)
             return
 
         LOG.info("Publishing updated discovery for %s", device_id)
@@ -374,8 +364,7 @@ class Client:
 
         self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/serial", device_id, retain=True)
         self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/type", get_device_type_name(device_id), retain=True)
-        self._client.publish(f"{HA_BASE_TOPIC}/grobro/{device_id}/firmware", firmware, retain=True)
-        
+
     def __migrate_entity_discovery(self, device_id: str, known_registers: GroBroRegisters):
         old_entities = [("set_wirk", "number")]
         for e_name, e_type in old_entities:
