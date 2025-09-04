@@ -270,10 +270,10 @@ class Client:
 
         # prepare discovery payload
         payload: dict = {
-            "device": self.__device_info_from_config(device_id),
-            "availability_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/availability",
+            "dev": self.__device_info_from_config(device_id),
+            "avty_t": f"{HA_BASE_TOPIC}/grobro/{device_id}/availability",
             "o": {"name": "grobro", "url": "https://github.com/robertzaage/GroBro"},
-            "components": {},
+            "cmps": {},
         }
 
         # Commands
@@ -290,7 +290,7 @@ class Client:
 
             unique_id = f"grobro_{device_id}_cmd_{cmd_name}"
             cmd_type = cmd.homeassistant.type
-            payload["components"][unique_id] = {
+            payload["cmps"][unique_id] = {
                 "command_topic": f"{HA_BASE_TOPIC}/{cmd_type}/grobro/{device_id}/{cmd_name}/set",
                 "state_topic": f"{HA_BASE_TOPIC}/{cmd_type}/grobro/{device_id}/{cmd_name}/get",
                 "platform": cmd_type,
@@ -299,7 +299,7 @@ class Client:
             }
 
         # Read-All Button
-        payload["components"][f"grobro_{device_id}_cmd_read_all"] = {
+        payload["cmps"][f"grobro_{device_id}_cmd_read_all"] = {
             "command_topic": f"{HA_BASE_TOPIC}/button/grobro/{device_id}/read_all/read",
             "platform": "button",
             "unique_id": f"grobro_{device_id}_cmd_read_all",
@@ -311,7 +311,7 @@ class Client:
             if not state.homeassistant.publish:
                 continue
             unique_id = f"grobro_{device_id}_{state_name}"
-            payload["components"][unique_id] = {
+            payload["cmps"][unique_id] = {
                 "platform": "sensor",
                 "name": state.homeassistant.name,
                 "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/state",
@@ -325,7 +325,7 @@ class Client:
             }
 
         # Serial Number Entity
-        payload["components"][f"grobro_{device_id}_serial"] = {
+        payload["cmps"][f"grobro_{device_id}_serial"] = {
             "platform": "sensor",
             "name": "Device SN",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
@@ -335,7 +335,7 @@ class Client:
         }
 
         # Device Type Entity
-        payload["components"][f"grobro_{device_id}_type"] = {
+        payload["cmps"][f"grobro_{device_id}_type"] = {
             "platform": "sensor",
             "name": "Device Type",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/type",
@@ -392,18 +392,10 @@ class Client:
                 retain=True,
             )
 
-    
-    def __device_info_from_config(self, device_id: str) -> dict:
+    def __device_info_from_config(self, device_id: str):
+        # Find matching config
         config = self._config_cache.get(device_id)
-        return {
-            "identifiers": [device_id],
-            "manufacturer": "Growatt",  # optional, falls du Hersteller angeben willst
-            "model": get_device_type_name(device_id),
-            "sw_version": getattr(config, "sw_version", None),
-            "hw_version": getattr(config, "hw_version", None),
-            "name": f"{get_device_type_name(device_id)} {device_id}",
-            "via_device": None,  # optional, falls über Gateway
-        }
+        config_path = f"config_{device_id}.json"
 
         # Fallback: try loading from file
         if not config:
@@ -425,12 +417,6 @@ class Client:
             "manufacturer": "Growatt",
             "serial_number": device_id,
         }
-        if getattr(config, "sw_version", None):
-            device_info["sw_version"] = config.sw_version
-        if getattr(config, "hw_version", None):
-            device_info["hw_version"] = config.hw_version
-        if getattr(config, "mac_address", None):
-            device_info["connections"] = [["mac", config.mac_address]]
 
         type_name = get_device_type_name(device_id)
 
