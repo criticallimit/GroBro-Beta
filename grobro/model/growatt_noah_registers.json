@@ -1416,10 +1416,10 @@
         "position": {
           "register_no": 14,
           "offset": 0,
-          "size": 4
+          "size": 2
         },
         "data": {
-          "data_type": "STRING"
+          "data_type": "ASCII"
         }
       },
       "homeassistant": {
