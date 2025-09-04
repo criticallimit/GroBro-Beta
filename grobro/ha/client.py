@@ -394,16 +394,16 @@ class Client:
 
     
     def __device_info_from_config(self, device_id: str) -> dict:
-    config = self._config_cache.get(device_id)
-    return {
-        "identifiers": [device_id],
-        "manufacturer": "Growatt",  # optional, falls du Hersteller angeben willst
-        "model": get_device_type_name(device_id),
-        "sw_version": getattr(config, "sw_version", None),
-        "hw_version": getattr(config, "hw_version", None),
-        "name": f"{get_device_type_name(device_id)} {device_id}",
-        "via_device": None,  # optional, falls über Gateway
-    }
+        config = self._config_cache.get(device_id)
+        return {
+            "identifiers": [device_id],
+            "manufacturer": "Growatt",  # optional, falls du Hersteller angeben willst
+            "model": get_device_type_name(device_id),
+            "sw_version": getattr(config, "sw_version", None),
+            "hw_version": getattr(config, "hw_version", None),
+            "name": f"{get_device_type_name(device_id)} {device_id}",
+            "via_device": None,  # optional, falls über Gateway
+        }
 
         # Fallback: try loading from file
         if not config:
