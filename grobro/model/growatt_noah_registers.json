@@ -1411,7 +1411,7 @@
         "icon": "mdi:identifier"
       }
     },
-    "local_IP": {
+    "local_ip": {
       "growatt": {
         "position": {
           "register_no": 14,
@@ -1419,7 +1419,7 @@
           "size": 2
         },
         "data": {
-          "data_type": "ASCII"
+          "data_type": "STRING"
         }
       },
       "homeassistant": {
