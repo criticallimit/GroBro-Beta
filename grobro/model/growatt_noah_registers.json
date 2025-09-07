@@ -943,6 +943,26 @@
         "max": 800,
         "step": 1
       }
+    },
+    "priority_mode": {
+        "growatt": {
+            "position": {
+                "register_no": 8,
+                "offset": 0,
+                "size": 2
+            },
+            "data": {
+                "data_type": "INT"
+            }
+        },
+        "homeassistant": {
+            "publish": true,
+            "name": "Priority Mode",
+            "type": "number",
+            "min": 0,
+            "max": 2,
+            "step": 1
+        }
     },    
     "discharge_limit": {
       "growatt": {
