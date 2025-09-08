@@ -54,14 +54,14 @@
             }
         },
         "homeassistant": {
-            "publish": true,
-            "name": "Slot 1 Mode",
-            "type": "select",
-            "options_map": {
-              "Load First": 0,
-              "Battery First": 1,
-              "Smart Mode": 2
-            ]
+          "publish": true,
+          "name": "Slot 1 Mode",
+          "type": "select",
+          "options_map": {
+            "Load First": 0,
+            "Battery First": 1,
+            "Smart Mode": 2
+          }
         }
     },
     "slot1_power": {
