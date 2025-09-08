@@ -56,10 +56,11 @@
         "homeassistant": {
             "publish": true,
             "name": "Slot 1 Mode",
-            "type": "select",
+            "type": "number",
             "min": 0,
             "max": 2,
-            "step": 1
+            "step": 1,
+            "mode": "box"
         }
     },
     "slot1_power": {
