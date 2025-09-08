@@ -49,9 +49,17 @@
                 "offset": 0,
                 "size": 2
             },
-            "data": {
-                "data_type": "INT"
+           "data": {
+           "data_type": "ENUM",
+           "enum_options": {
+            "enum_type": "INT_MAP",
+            "values": {
+              "0": "Load First",
+              "1": "Battery First",
+              "2": "Smart Mode"
+              }
             }
+          }
         },
         "homeassistant": {
             "publish": true,
@@ -1075,7 +1083,7 @@
             "values": {
               "0": "Load First",
               "1": "Battery First",
-              "2": "Grid First"
+              "2": "Smart Mode"
             }
           }
         }
