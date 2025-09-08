@@ -64,10 +64,12 @@
         "homeassistant": {
             "publish": true,
             "name": "Slot 1 Mode",
-            "type": "number",
-            "min": 0,
-            "max": 2,
-            "step": 1
+            "type": "select",
+            "options": [
+              "Load First",
+              "Battery First",
+              "Smart Mode"
+            ]
         }
     },
     "slot1_power": {
