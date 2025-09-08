@@ -49,19 +49,17 @@
                 "offset": 0,
                 "size": 2
             },
-           "data": {
+            "data": {
                 "data_type": "INT"
             }
         },
         "homeassistant": {
-          "publish": true,
-          "name": "Slot 1 Mode",
-          "type": "select",
-          "options_map": {
-            "Load First": 0,
-            "Battery First": 1,
-            "Smart Mode": 2
-          }
+            "publish": true,
+            "name": "Slot 1 Mode",
+            "type": "number",
+            "min": 0,
+            "max": 2,
+            "step": 1
         }
     },
     "slot1_power": {
