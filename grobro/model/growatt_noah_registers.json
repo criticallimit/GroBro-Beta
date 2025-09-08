@@ -56,7 +56,7 @@
         "homeassistant": {
             "publish": true,
             "name": "Slot 1 Mode",
-            "type": "number",
+            "type": "select",
             "min": 0,
             "max": 2,
             "step": 1
