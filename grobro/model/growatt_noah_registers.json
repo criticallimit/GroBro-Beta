@@ -59,8 +59,7 @@
             "type": "number",
             "min": 0,
             "max": 2,
-            "step": 1,
-            "mode": "box"
+            "step": 1
         }
     },
     "slot1_power": {
