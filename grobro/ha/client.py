@@ -101,7 +101,7 @@ class Client:
         self._client.connect(mqtt_config.host, mqtt_config.port, 60)
 
         # Subscriptions
-        for cmd_type in ["number", "button", "switch", "select"]:
+        for cmd_type in ["number", "button", "switch"]:
             for action in ["set", "read"]:
                 topic = f"{HA_BASE_TOPIC}/{cmd_type}/grobro/+/+/{action}"
                 self._client.subscribe(topic)
@@ -178,7 +178,7 @@ class Client:
 
     def __on_message(self, client, userdata, msg: mqtt.MQTTMessage):
         parts = msg.topic.removeprefix(f"{HA_BASE_TOPIC}/").split("/")
-        if len(parts) != 5 or parts[0] not in {"number", "button", "switch", "select"}:
+        if len(parts) != 5 or parts[0] not in {"number", "button", "switch"}:
             return
         cmd_type, _, device_id, cmd_name, action = parts
 
@@ -213,7 +213,7 @@ class Client:
                 return
 
         # Number / Switch
-        if cmd_type in {"number", "switch", "select"} and action == "set":
+        if cmd_type in {"number", "switch"} and action == "set":
             raw_value = msg.payload.decode()
             if cmd_type == "switch":
                 parsed_value = 1 if raw_value.upper() == "ON" else 0
@@ -421,15 +421,15 @@ class Client:
         type_name = get_device_type_name(device_id)
 
         known_model_id = {
-            "55": "NEO-Series",
-            "72": "NEXA-Series",
-            "61": "NOAH-Series",
+            "55": "NEO-series",
+            "72": "NEXA-series",
+            "61": "NOAH-series",
         }.get(getattr(config, "device_type", None))
 
         if known_model_id:
             device_info["model"] = known_model_id
         else:
-            device_info["model"] = f"{type_name}-Series"
+            device_info["model"] = f"{type_name}-series"
 
         if getattr(config, "model_id", None):
             device_info["model"] += f" ({config.model_id})"
