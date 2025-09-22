@@ -1838,52 +1838,6 @@
         "icon": "mdi:information"
       }
     },
-    "Inverter_Fan_Speed": {
-      "growatt": {
-        "position": {
-          "register_no": 82,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "FLOAT",
-          "float_options": {
-            "delta": 0.0,
-            "multiplier": 1.0
-          }
-        }
-      },
-      "homeassistant": {
-        "name": "Fan speed of inverter",
-        "publish": true,
-        "state_class": "measurement",
-        "unit_of_measurement": "%",
-        "icon": "mdi:percent"
-      }
-    },
-    "MPPT_Fan_Speed": {
-      "growatt": {
-        "position": {
-          "register_no": 81,
-          "offset": 0,
-          "size": 2
-        },
-        "data": {
-          "data_type": "FLOAT",
-          "float_options": {
-            "delta": 0.0,
-            "multiplier": 1.0
-          }
-        }
-      },
-      "homeassistant": {
-        "name": "Fan speed of MPPT charger",
-        "publish": true,
-        "state_class": "measurement",
-        "unit_of_measurement": "%",
-        "icon": "mdi:percent"
-      }
-    },
     "bat_cyclecnt": {
       "growatt": {
         "position": {
