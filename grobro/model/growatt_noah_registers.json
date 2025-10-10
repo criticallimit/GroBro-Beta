@@ -1399,7 +1399,7 @@
         "position": {
           "register_no": 33,
           "offset": 0,
-          "size": 4
+          "size": 8
         },
         "data": {
           "data_type": "STRING"
@@ -1493,23 +1493,6 @@
         "icon": "mdi:solar-power"
       }
     },
-    "bat2_ser_part_3": {
-      "growatt": {
-        "position": {
-          "register_no": 37,
-          "offset": 0,
-          "size": 4
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Bat2 Serial Part 3",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },
     "bat3_ser_part_3": {
       "growatt": {
         "position": {
@@ -1547,9 +1530,9 @@
     "bat2_ser_part_2": {
       "growatt": {
         "position": {
-          "register_no": 35,
+          "register_no": 37,
           "offset": 0,
-          "size": 4
+          "size": 8
         },
         "data": {
           "data_type": "STRING"
@@ -1591,23 +1574,6 @@
       },
       "homeassistant": {
         "name": "Bat4 Serial Part 2",
-        "publish": true,
-        "icon": "mdi:identifier"
-      }
-    },
-    "bat2_ser_part_4": {
-      "growatt": {
-        "position": {
-          "register_no": 39,
-          "offset": 0,
-          "size": 4
-        },
-        "data": {
-          "data_type": "STRING"
-        }
-      },
-      "homeassistant": {
-        "name": "Bat2 Serial Part 4",
         "publish": true,
         "icon": "mdi:identifier"
       }
