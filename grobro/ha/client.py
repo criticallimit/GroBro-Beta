@@ -114,6 +114,7 @@ class Client:
                 self._client.subscribe(topic)
         self._client.on_message = self.__on_message
         self._client.on_connect = self.__on_connect
+
         # Configs laden (Cache aus Dateien)
         for fname in os.listdir("."):
             if fname.startswith("config_") and fname.endswith(".json"):
@@ -182,6 +183,7 @@ class Client:
             LOG.error(f"HA: publish msg: {e}")
 
     # ------------------- MQTT Callback -------------------
+
     def __on_connect(self, client, userdata, flags, reason_code, properties):
         LOG.debug(f"Connected to HA MQTT server with result code {reason_code}")
 
