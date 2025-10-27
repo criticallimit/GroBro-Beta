@@ -328,7 +328,7 @@ class Client:
         for state_name, state in known_registers.input_registers.items():
             if not state.homeassistant.publish:
                 continue
-            unique_id = f"grobro_{device_id}_{state_name}"  # bleibt identisch mit bisherigem object_id
+            unique_id = f"grobro_{device_id}_{state_name}"
             payload["cmps"][unique_id] = {
                 "platform": "sensor",
                 "name": state.homeassistant.name,
