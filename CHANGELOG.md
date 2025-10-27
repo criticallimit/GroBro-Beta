@@ -2,6 +2,9 @@
 This is for personal testing.
 Changes are not documented and there may be temporary unexpected behavior of this Add-on
 ----------------------------------------------------------------------------------------
+# 1.0.4
++ fixed object_id deprecated 
+----------------------------------------------------------------------------------------
 # 1.0.3
 + fixed Protocol Errors during start
 ----------------------------------------------------------------------------------------
