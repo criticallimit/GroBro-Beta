@@ -335,7 +335,7 @@ class Client:
                 "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/state",
                 "value_template": f"{{{{ value_json['{state_name}'] }}}}",
                 "unique_id": unique_id,
-                "default_entity_id": f"{device_id}_{state_name}",
+                "object_id": f"{device_id}_{state_name}",
                 "device_class": state.homeassistant.device_class,
                 "state_class": state.homeassistant.state_class,
                 "unit_of_measurement": state.homeassistant.unit_of_measurement,
@@ -348,7 +348,7 @@ class Client:
             "name": "Device SN",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
             "unique_id": f"grobro_{device_id}_serial",
-            "default_entity_id": f"{device_id}_serial",
+            "object_id": f"{device_id}_serial",
             "icon": "mdi:identifier",
         }
 
@@ -358,7 +358,7 @@ class Client:
             "name": "Device Type",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/type",
             "unique_id": f"grobro_{device_id}_type",
-            "default_entity_id": f"{device_id}_type",
+            "object_id": f"{device_id}_type",
             "icon": "mdi:chip",
         }
         # Online Entity
@@ -369,7 +369,7 @@ class Client:
                 "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/online",
                 "device_class": "connectivity",
                 "unique_id": f"grobro_{device_id}_online",
-                "default_entity_id": f"{device_id}_online",
+                "object_id": f"{device_id}_online",
             }
 
         payload_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
