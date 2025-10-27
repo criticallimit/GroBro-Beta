@@ -328,7 +328,7 @@ class Client:
         for state_name, state in known_registers.input_registers.items():
             if not state.homeassistant.publish:
                 continue
-            unique_id = f"grobro_{device_id}_{state_name}"
+            unique_id = f"grobro_{device_id}_{state_name}"  # bleibt identisch mit bisherigem object_id
             payload["cmps"][unique_id] = {
                 "platform": "sensor",
                 "name": state.homeassistant.name,
@@ -342,30 +342,34 @@ class Client:
             }
 
         # Serial Number Entity
-        payload["cmps"][f"grobro_{device_id}_serial"] = {
+        serial_unique_id = f"grobro_{device_id}_serial"
+        payload["cmps"][serial_unique_id] = {
             "platform": "sensor",
             "name": "Device SN",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/serial",
-            "unique_id": f"grobro_{device_id}_serial",
+            "unique_id": serial_unique_id,
             "icon": "mdi:identifier",
         }
 
         # Device Type Entity
-        payload["cmps"][f"grobro_{device_id}_type"] = {
+        type_unique_id = f"grobro_{device_id}_type"
+        payload["cmps"][type_unique_id] = {
             "platform": "sensor",
             "name": "Device Type",
             "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/type",
-            "unique_id": f"grobro_{device_id}_type",
+            "unique_id": type_unique_id,
             "icon": "mdi:chip",
         }
+
         # Online Entity
         if DEVICE_TIMEOUT > 0 and AVAILABILITY_SENSOR:
-            payload["cmps"][f"grobro_{device_id}_online"] = {
+            online_unique_id = f"grobro_{device_id}_online"
+            payload["cmps"][online_unique_id] = {
                 "platform": "binary_sensor",
                 "name": "Online",
                 "state_topic": f"{HA_BASE_TOPIC}/grobro/{device_id}/online",
                 "device_class": "connectivity",
-                "unique_id": f"grobro_{device_id}_online",
+                "unique_id": online_unique_id,
             }
 
         payload_str = json.dumps(payload, sort_keys=True, separators=(",", ":"))
