@@ -1236,7 +1236,7 @@
         "data": {
           "data_type": "FLOAT",
           "float_options": {
-            "delta": -27.3,
+            "delta": -273,
             "multiplier": 1
           }
         }
@@ -1713,7 +1713,7 @@
         "data": {
           "data_type": "FLOAT",
           "float_options": {
-            "delta": -27.3,
+            "delta": -273,
             "multiplier": 1
           }
         }
