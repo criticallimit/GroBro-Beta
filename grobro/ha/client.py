@@ -177,13 +177,7 @@ class Client:
                     if isinstance(value, (int, float)) and value == -273:
                         payload[key] = None
                     else:
-                        # Hier den multiplier aus float_options holen
-                        multiplier = getattr(reg.growatt.data.float_options, "multiplier", 1)
-                        delta = getattr(reg.growatt.data.float_options, "delta", 0)
-                        # Rohwert transformieren
-                        kelvin = value * multiplier + delta
-                        # Dann in Celsius umrechnen
-                        payload[key] = round(kelvin - 273.15, 2)
+                        payload[key] = round(value *10 - 273.15, 2)
         # ENUM Mapping (must come AFTER our replacement!)
         if known_registers:
             for key, value in list(payload.items()):
