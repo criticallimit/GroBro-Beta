@@ -164,7 +164,7 @@ class Client:
         payload = dict(state.payload)
         known_registers = get_known_registers(state.device_id)
 
-        # Replace invalid battery temperatures (-273) with "--"
+        # Replace invalid battery temperatures (-273) with None
         if known_registers:
             for key, value in list(payload.items()):
                 reg = known_registers.input_registers.get(key)
@@ -175,7 +175,7 @@ class Client:
                 name = key  # key == "bat1_temp", "bat2_temp", etc.
                 if name.startswith("bat") and name.endswith("_temp"):
                     if isinstance(value, (int, float)) and value == -273:
-                        payload[key] = "--"
+                        payload[key] = None
 
         # ENUM Mapping (must come AFTER our replacement!)
         if known_registers:
