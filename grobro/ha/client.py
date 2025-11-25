@@ -174,10 +174,10 @@ class Client:
                 # Identify batX_temp sensors
                 name = key  # key == "bat1_temp", "bat2_temp", etc.
                 if name.startswith("bat") and name.endswith("_temp"):
-                    if isinstance(value, (int, float)) and value == -273:
+                    if isinstance(value, (int, float)) and value == 0:
                         payload[key] = None
                     else:
-                        payload[key] = value *10 - 273
+                        payload[key] = value *10 - 273.1
         # ENUM Mapping (must come AFTER our replacement!)
         if known_registers:
             for key, value in list(payload.items()):
