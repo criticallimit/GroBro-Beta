@@ -1727,7 +1727,7 @@
         "icon": "mdi:thermometer"
       }
     },
-    "bat1_temp_F": {
+    "k_bat1_temp_F": {
       "growatt": {
         "position": {
           "register_no": 30,
@@ -1739,7 +1739,7 @@
         }
       },
       "homeassistant": {
-        "name": "Bat1 Temp F",
+        "name": "K Bat1 Temp K",
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
