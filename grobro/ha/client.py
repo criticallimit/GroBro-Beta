@@ -176,7 +176,8 @@ class Client:
                 if name.startswith("bat") and name.endswith("_temp"):
                     if isinstance(value, (int, float)) and value == -273:
                         payload[key] = None
-
+                else:
+                    payload[key] = round(value - 273.15, 2)
         # ENUM Mapping (must come AFTER our replacement!)
         if known_registers:
             for key, value in list(payload.items()):
