@@ -1727,6 +1727,26 @@
         "icon": "mdi:thermometer"
       }
     },
+    "bat1_temp_F": {
+      "growatt": {
+        "position": {
+          "register_no": 30,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "INT"
+        }
+      },
+      "homeassistant": {
+        "name": "Bat1 Temp F",
+        "publish": true,
+        "state_class": "measurement",
+        "device_class": "temperature",
+        "unit_of_measurement": "°C",
+        "icon": "mdi:thermometer"
+      }
+    },    
     "bat3_temp": {
       "growatt": {
         "position": {
