@@ -177,7 +177,7 @@ class Client:
                     if isinstance(value, (int, float)) and value == -273:
                         payload[key] = None
                     else:
-                        payload[key] = round(value *10 - 273.15, 3)
+                        payload[key] = value *10 - 273
         # ENUM Mapping (must come AFTER our replacement!)
         if known_registers:
             for key, value in list(payload.items()):
