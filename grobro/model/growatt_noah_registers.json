@@ -1743,10 +1743,30 @@
         "publish": true,
         "state_class": "measurement",
         "device_class": "temperature",
-        "unit_of_measurement": "°C",
+        "unit_of_measurement": "K",
         "icon": "mdi:thermometer"
       }
-    },    
+    },
+    "k_bat2_temp_F": {
+      "growatt": {
+        "position": {
+          "register_no": 42,
+          "offset": 0,
+          "size": 2
+        },
+        "data": {
+          "data_type": "INT"
+        }
+      },
+      "homeassistant": {
+        "name": "K Bat2 Temp K",
+        "publish": true,
+        "state_class": "measurement",
+        "device_class": "temperature",
+        "unit_of_measurement": "K",
+        "icon": "mdi:thermometer"
+      }
+    },        
     "bat3_temp": {
       "growatt": {
         "position": {
