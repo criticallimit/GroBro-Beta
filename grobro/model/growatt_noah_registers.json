@@ -1742,7 +1742,6 @@
         "name": "K Bat1 Temp K",
         "publish": true,
         "state_class": "measurement",
-        "device_class": "temperature",
         "unit_of_measurement": "K",
         "icon": "mdi:thermometer"
       }
@@ -1762,7 +1761,6 @@
         "name": "K Bat2 Temp K",
         "publish": true,
         "state_class": "measurement",
-        "device_class": "temperature",
         "unit_of_measurement": "K",
         "icon": "mdi:thermometer"
       }
